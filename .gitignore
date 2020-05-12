@@ -1,5 +1,5 @@
 # Buggy binary
-service/buggy
+main
 
 # Binaries for programs and plugins
 *.exe

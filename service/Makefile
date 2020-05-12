@@ -1,8 +1,8 @@
 run: clean build
-	./buggy
+	./main
 
 build:
-	go build buggy.go
+	go build main.go
 
 clean:
-	rm buggy || true
+	rm main || true
