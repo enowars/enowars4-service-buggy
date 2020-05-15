@@ -40,8 +40,8 @@ func main() {
 	// router.HandleFunc("/forbidden", forbidden)
 	// router.HandleFunc("/profile", profile)
 
-	fmt.Println("Running server on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println("Running server on port 7890")
+	log.Fatal(http.ListenAndServe(":7890", router))
 }
 
 // First vuln (?), predictable admin cookie
@@ -52,5 +52,6 @@ func initCookies() {
 }
 
 func index(w http.ResponseWriter, req *http.Request) {
+	fmt.Printf("Handling request from %s.\n", req.RemoteAddr)
 	tpl.ExecuteTemplate(w, "index.gohtml", nil)
 }

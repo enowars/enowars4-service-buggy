@@ -1,0 +1,8 @@
+version: '3'
+services:
+  buggy:
+    build: .
+    volumes:
+      - .:/service
+    ports:
+      - "7890:7890"
