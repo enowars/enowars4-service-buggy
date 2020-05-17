@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/enowars/enowars4-service-buggy/service/Models"
 	gomail "gopkg.in/mail.v2"
 	"log"
 )
