@@ -11,7 +11,7 @@ func sendMail(msg Msg, conf mailConf) (err error) {
 	m.SetHeader("From", msg.From)
 	m.SetHeader("To", msg.To)
 	if msg.Cc != "" {
-		//ToDo ensure @ is in string, maybe inject vuln here?
+		//ToDo ensure @ is in string, maybe inject vuln here(no @... smtg or inject cc)?
 		m.SetAddressHeader("Cc", msg.Cc, msg.Cc[:strings.IndexByte(msg.Cc, '@')])
 	}
 	m.SetHeader("Subject", msg.Subject)
