@@ -1,6 +1,6 @@
 package Models
 
-type MSG struct {
+type Msg struct {
 	To      string
 	From    string
 	Cc      string
@@ -8,8 +8,8 @@ type MSG struct {
 	Body    string
 }
 
-func NewMessage(to, from, cc, subject, body string) *MSG {
-	m := &MSG{
+func NewMessage(to, from, cc, subject, body string) *Msg {
+	m := &Msg{
 		To:      to,
 		From:    from,
 		Cc:      cc,
