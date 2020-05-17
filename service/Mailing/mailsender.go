@@ -1,24 +1,22 @@
-package main
+package Mailing
 
 import (
-	"github.com/enowars/enowars4-service-buggy/Models"
 	gomail "gopkg.in/mail.v2"
 	"log"
 	"strings"
 )
 
-//ToDo: config file for mail sending
-func sendMail(msg Models.Msg) (err error) {
+func sendMail(msg Msg, conf mailConf) (err error) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", msg.From)
 	m.SetHeader("To", msg.To)
 	if msg.Cc != "" {
-		//ToDo ensure @ is in string
+		//ToDo ensure @ is in string, maybe inject vuln here?
 		m.SetAddressHeader("Cc", msg.Cc, msg.Cc[:strings.IndexByte(msg.Cc, '@')])
 	}
 	m.SetHeader("Subject", msg.Subject)
 	m.SetBody("text", msg.Body)
-	d := gomail.Dialer{Host: "127.0.0.1", Port: 587}
+	d := gomail.Dialer{Host: conf.Host, Port: conf.Port}
 
 	if err := d.DialAndSend(m); err != nil {
 		log.Print(err)

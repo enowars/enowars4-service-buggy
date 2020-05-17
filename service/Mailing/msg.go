@@ -1,4 +1,4 @@
-package Models
+package Mailing
 
 type Msg struct {
 	To      string
