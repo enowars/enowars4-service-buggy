@@ -1,7 +1,6 @@
 * {
     margin: 0;
     padding: 0;
-    border: 0;
 }
 
 body {
@@ -17,7 +16,7 @@ ul {
 }
 
 li {
-    float: left;
+    float: right;
 }
 
 li a {
@@ -32,8 +31,12 @@ h1 {
     text-align: center;
 }
 
+.content {
+    margin-left: 0;
+    margin-right: 0;
+}
+
 img {
-    user-drag: none;
     user-select: none;
     -moz-user-select: none;
     -webkit-user-drag: none;
