@@ -8,13 +8,14 @@ type Msg struct {
 	Body    string
 }
 
-func NewMessage(to, from, cc, subject, body string) *Msg {
+func NewMessage(to, from, subject, body, cc string) *Msg {
+
 	m := &Msg{
 		To:      to,
 		From:    from,
-		Cc:      cc,
 		Subject: subject,
 		Body:    body,
+		Cc:      cc,
 	}
 	return m
 }
