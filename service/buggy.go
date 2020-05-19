@@ -37,7 +37,7 @@ func main() {
 	// router.HandleFunc("/login", login)
 	// router.HandleFunc("/logout", logout)
 	// router.HandleFunc("/register", logout)
-	// router.HandleFunc("/forbidden", forbidden)
+	router.HandleFunc("/forbidden", forbidden)
 	// router.HandleFunc("/profile", profile)
 
 	fmt.Println("Running server on port 8080")
@@ -53,4 +53,24 @@ func initCookies() {
 
 func index(w http.ResponseWriter, req *http.Request) {
 	tpl.ExecuteTemplate(w, "index.gohtml", nil)
+}
+
+func login(w http.ResponseWriter, req *http.Request) {
+	//ToDo: Implement me
+}
+
+func logout(w http.ResponseWriter, req *http.Request) {
+	//ToDo: Implement me
+}
+
+func register(w http.ResponseWriter, req *http.Request) {
+	//ToDo: implement me
+}
+
+func forbidden(w http.ResponseWriter, req *http.Request) {
+	tpl.ExecuteTemplate(w, "forbidden.gohtml", nil)
+}
+
+func profile(w http.ResponseWriter, req *http.Request) {
+	//ToDo: Implement Me
 }
