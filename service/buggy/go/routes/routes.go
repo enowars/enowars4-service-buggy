@@ -50,7 +50,7 @@ func init() {
 
 // Index : Display main page
 func Index(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, "cookie-name")
+	session, err := store.Get(req, "buggy-cookie")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -65,7 +65,7 @@ func Index(w http.ResponseWriter, req *http.Request) {
 
 // Register : Register new user
 func Register(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, "cookie-name")
+	session, err := store.Get(req, "buggy-cookie")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -95,7 +95,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 
 // Login user
 func Login(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, "cookie-name")
+	session, err := store.Get(req, "buggy-cookie")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -132,7 +132,7 @@ func Login(w http.ResponseWriter, req *http.Request) {
 
 // Logout user
 func Logout(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, "cookie-name")
+	session, err := store.Get(req, "buggy-cookie")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -151,7 +151,7 @@ func Logout(w http.ResponseWriter, req *http.Request) {
 
 // Profile : Show user profile
 func Profile(w http.ResponseWriter, req *http.Request) {
-	session, err := store.Get(req, "cookie-name")
+	session, err := store.Get(req, "buggy-cookie")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
