@@ -16,7 +16,6 @@ type account struct {
 }
 
 type reg struct {
-	Success   bool
 	Duplicate bool
 	Error     bool
 }
@@ -62,71 +61,73 @@ func Index(w http.ResponseWriter, req *http.Request) {
 	} else {
 		tpl.ExecuteTemplate(w, "index.gohtml", nil)
 	}
-
 }
 
 // Register : Register new user
 func Register(w http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
-		if req.FormValue("username") != "" && req.FormValue("pw") != "" {
-			insert := db.InsertUser(req.FormValue("username"), req.FormValue("pw"), "", false)
-			if insert {
-				tpl.ExecuteTemplate(w, "register.gohtml", reg{true, false, false})
+	session, err := store.Get(req, "cookie-name")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	acc := getAccount(session)
+	if acc.Auth {
+		http.Redirect(w, req, "/", http.StatusFound)
+	} else {
+		if req.Method == http.MethodPost {
+			username := req.FormValue("username")
+			password := req.FormValue("pw")
+			if username != "" && password != "" {
+				insert := db.InsertUser(username, password, "", false)
+				if insert {
+					redirectOnSuccess(username, session, w, req)
+				} else {
+					tpl.ExecuteTemplate(w, "register.gohtml", reg{true, false})
+				}
 			} else {
-				tpl.ExecuteTemplate(w, "register.gohtml", reg{false, true, false})
+				tpl.ExecuteTemplate(w, "register.gohtml", reg{false, true})
 			}
 		} else {
-			tpl.ExecuteTemplate(w, "register.gohtml", reg{false, false, true})
+			tpl.ExecuteTemplate(w, "register.gohtml", nil)
 		}
-	} else {
-		tpl.ExecuteTemplate(w, "register.gohtml", nil)
 	}
 }
 
-// TODO: Implement all routes
-
 // Login user
 func Login(w http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
-		session, err := store.Get(req, "cookie-name")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		username := req.FormValue("username")
-		password := req.FormValue("pw")
-		if username != "" && password != "" {
+	session, err := store.Get(req, "cookie-name")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	acc := getAccount(session)
+	if acc.Auth {
+		http.Redirect(w, req, "/", http.StatusFound)
+	} else {
+		if req.Method == http.MethodPost {
+			username := req.FormValue("username")
+			password := req.FormValue("pw")
+			if username != "" && password != "" {
 
-			loginValid := db.AuthUser(username, password)
-			if loginValid {
-				user := db.GetUser(username)
-				accountAuth := &account{
-					User: user,
-					Auth: true,
+				loginValid := db.AuthUser(username, password)
+				if loginValid {
+					redirectOnSuccess(username, session, w, req)
+				} else {
+					err = session.Save(req, w)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					tpl.ExecuteTemplate(w, "login.gohtml", login{true, false})
 				}
-
-				session.Values["account"] = accountAuth
-
-				err = session.Save(req, w)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				http.Redirect(w, req, "/profile", http.StatusFound)
-
 			} else {
-				err = session.Save(req, w)
-				if err != nil {
-					tpl.ExecuteTemplate(w, "login.gohtml", login{false, true})
-				}
-				tpl.ExecuteTemplate(w, "login.gohtml", login{true, false})
+				tpl.ExecuteTemplate(w, "login.gohtml", login{false, true})
 			}
 		} else {
-			tpl.ExecuteTemplate(w, "login.gohtml", login{false, true})
+			tpl.ExecuteTemplate(w, "login.gohtml", nil)
 		}
-	} else {
-		tpl.ExecuteTemplate(w, "login.gohtml", nil)
 	}
+
 }
 
 // Logout user
@@ -172,4 +173,21 @@ func getAccount(s *sessions.Session) account {
 		return account{Auth: false}
 	}
 	return acc
+}
+
+func redirectOnSuccess(username string, session *sessions.Session, w http.ResponseWriter, req *http.Request) {
+	user := db.GetUser(username)
+	accountAuth := &account{
+		User: user,
+		Auth: true,
+	}
+
+	session.Values["account"] = accountAuth
+
+	err := session.Save(req, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, req, "/profile", http.StatusFound)
 }

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Buggy Store</title>
+    <title>Buggy Store | Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="templates/style.css">
 </head>
@@ -10,13 +10,8 @@
 <div style="text-align:center">
     <ul>
         <li style="float: left"><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
-        {{if .Auth}}
-            <li><a href="/profile">Profile</a></li>
-            <li><a href="/logout">Logout</a></li>
-        {{else}}
-            <li><a href="/login">Login</a></li>
-            <li><a href="/register">Register</a></li>
-        {{end}}
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
     </ul>
     <form method="POST">
         <h1>Register</h1>
@@ -24,7 +19,7 @@
         <br/>
 
         <label><b>Username</b></label><br/>
-        <input type="text" name="username" required><br/>
+        <input type="text" name="username" pattern="/^[0-9a-zA-Z]{3,20}$/" required><br/>
 
         <label><b>Password</b></label><br/>
         <input type="password" name="pw" required><br/>
@@ -35,10 +30,6 @@
         <h3 style="color: red">An error occured! Please try again.</h3>
     {{else if .Duplicate}}
         <h3 style="color:orange">User already exists!</h3>
-    {{end}}
-    <!-- TODO: Perhaps redirect/auto-login ? -->
-    {{if .Success}}
-        <h3 style="color: green">Account registration successful! You can now login.</h3>
     {{end}}
 </div>
 </body>

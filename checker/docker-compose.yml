@@ -1,0 +1,13 @@
+version: '3'
+services:
+  buggy-checker:
+    build:
+      context: ..
+      dockerfile: ./example/Dockerfile
+    ports:
+      - 127.0.0.1:8080:8080
+  mongodb:
+    image: mongo
+    restart: always
+    ports:
+      - 127.0.0.1:27017:27017
