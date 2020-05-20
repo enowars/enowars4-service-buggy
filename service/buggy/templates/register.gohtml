@@ -10,19 +10,14 @@
 <div style="text-align:center">
     <ul>
         <li style="float: left"><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
-        <li><a href="/profile">Profile</a></li>
-        <li><a href="/login">Login</a></li>
-        <li><a href="/register">Register</a></li>
+        {{if .Auth}}
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="/logout">Logout</a></li>
+        {{else}}
+            <li><a href="/login">Login</a></li>
+            <li><a href="/register">Register</a></li>
+        {{end}}
     </ul>
-    {{if .Error}}
-        <h3 style="color: red">An error occured! Please try again.</h3>
-    {{else if .Duplicate}}
-        <h3 style="color:orange">User already exists!</h3>
-    {{end}}
-    <!-- TODO: Perhaps redirect/auto-login ? -->
-    {{if .Success}}
-        <h3 style="color: green">Account registration successful! You can now login.</h3>
-    {{end}}
     <form method="POST">
         <h1>Register</h1>
         <p>Please fill in this form to create an account.</p>
@@ -36,6 +31,15 @@
 
         <button type="submit" class="">Register</button>
     </form>
+    {{if .Error}}
+        <h3 style="color: red">An error occured! Please try again.</h3>
+    {{else if .Duplicate}}
+        <h3 style="color:orange">User already exists!</h3>
+    {{end}}
+    <!-- TODO: Perhaps redirect/auto-login ? -->
+    {{if .Success}}
+        <h3 style="color: green">Account registration successful! You can now login.</h3>
+    {{end}}
 </div>
 </body>
 </html>

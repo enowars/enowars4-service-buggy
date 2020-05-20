@@ -7,12 +7,14 @@
     <link rel="stylesheet" type="text/css" href="templates/style.css">
 </head>
 <body>
+<div style="text-align:center">
     <ul>
-      <li><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
-      <li style="float:right"><a href="/profile">Profile</a></li>
-      <li style="float:right"><a href="/login">Login</a></li>
-      <li style="float:right"><a href="/register">Register</a></li>
+        <li style="float: left"><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
+        <li><a href="/profile">Profile</a></li>
+        <li><a href="/logout">Logout</a></li>
     </ul>
+    <h1>Hello {{.User.Username}}!</h1>
+</div>
 </body>
 </html>
 

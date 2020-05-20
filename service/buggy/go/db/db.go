@@ -7,7 +7,8 @@ import (
 	_ "github.com/go-sql-driver/mysql" // mysql driver
 )
 
-type user struct {
+// User struct
+type User struct {
 	Username string
 	Password string
 	Status   string
@@ -48,7 +49,7 @@ func AuthUser(username string, pw string) bool {
 	}
 	defer db.Close()
 
-	var userReq user
+	var userReq User
 	err = db.QueryRow("SELECT name, password FROM users WHERE BINARY name = ?", username).Scan(&userReq.Username, &userReq.Password)
 
 	// Ohne "BINARY" case-insensitiv -> vuln falls man zb Account mit username==admIN erstellen kann
@@ -83,6 +84,24 @@ func DeleteUser(username string) bool {
 	return true
 }
 
+// GetUser : Return User from db if existing
+func GetUser(username string) User {
+	db, err := sql.Open("mysql", "root:root@tcp(mysql:3306)/enodb")
+
+	if err != nil {
+		return User{}
+	}
+	defer db.Close()
+
+	var userReq User
+	err = db.QueryRow("SELECT name, password, status, admin FROM users WHERE name = ?", username).Scan(&userReq.Username, &userReq.Password, &userReq.Status, &userReq.Admin)
+
+	if err != nil {
+		return User{}
+	}
+	return userReq
+}
+
 // PrintDB : Print all "users" table entries
 // TODO: Remove this at some point, only to be used now for debugging
 func PrintDB() {
@@ -103,7 +122,7 @@ func PrintDB() {
 	}
 
 	for results.Next() {
-		var userTest user
+		var userTest User
 
 		err = results.Scan(&userTest.Username, &userTest.Password, &userTest.Status, &userTest.Admin)
 
