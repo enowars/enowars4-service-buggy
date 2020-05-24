@@ -162,7 +162,6 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 	} else {
 		http.Redirect(w, req, "/", http.StatusFound)
 	}
-
 }
 
 func getAccount(s *sessions.Session) account {
@@ -190,4 +189,14 @@ func redirectOnSuccess(username string, session *sessions.Session, w http.Respon
 		return
 	}
 	http.Redirect(w, req, "/profile", http.StatusFound)
+}
+
+// ProductOne : Product page for super buggy
+func ProductOne(w http.ResponseWriter, req *http.Request) {
+	tpl.ExecuteTemplate(w, "super-buggy.gohtml", nil)
+}
+
+// ProductTwo : Product page for mega buggy
+func ProductTwo(w http.ResponseWriter, req *http.Request) {
+	tpl.ExecuteTemplate(w, "mega-buggy.gohtml", nil)
 }

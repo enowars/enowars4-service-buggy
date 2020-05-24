@@ -23,6 +23,9 @@ func main() {
 	router.HandleFunc("/logout", routes.Logout)
 	router.HandleFunc("/profile", routes.Profile)
 
+	router.HandleFunc("/super-buggy", routes.ProductOne)
+	router.HandleFunc("/mega-buggy", routes.ProductTwo)
+
 	fmt.Println("Running server on port 7890")
 	log.Fatal(http.ListenAndServe(":7890", router))
 }

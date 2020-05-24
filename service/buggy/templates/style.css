@@ -5,6 +5,8 @@
 
 body {
     font-family: monospace;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 ul {
@@ -50,6 +52,10 @@ img {
     margin: 20px;
 }
 
+.products a {
+    text-decoration: none;
+}
+
 .card {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     transition: 0.3s;
@@ -68,15 +74,17 @@ img {
     padding: 10px;
 }
 
-.card h4 {
+.buggy h4 {
     padding: 5px 10px;
     font-size: 20px;
+    color: black;
 }
 
-.card h5 {
+.buggy h5 {
     padding: 5px 10px;
     font-size: 14px;
     font-weight: normal;
+    color: black;
 }
 
 

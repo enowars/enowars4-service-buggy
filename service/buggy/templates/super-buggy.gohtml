@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Buggy Store | Mega Buggy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="templates/style.css">
+</head>
+<body>
+    <ul>
+        <li style="float: left"><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
+        {{if .Auth}}
+            <li><a href="/profile">Profile</a></li>
+            <li><a href="/logout">Logout</a></li>
+        {{else}}
+            <li><a href="/login">Login</a></li>
+            <li><a href="/register">Register</a></li>
+        {{end}}
+    </ul>
+    <h1>Super Buggy</h1>
+    <img src="../img/buggy.png" class="center">
+</body>
+</html>
+
