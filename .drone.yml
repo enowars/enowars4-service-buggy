@@ -15,8 +15,8 @@ steps:
   image: plugins/docker
   network_mode: registry-network
   environment:
-    MYSQL_DATABASE=enodb
-    MYSQL_ROOT_PASSWORD=root
+    MYSQL_DATABASE: enodb
+    MYSQL_ROOT_PASSWORD: root
   settings:
     dockerfile: service/mysql/Dockerfile
     repo: registry:5000/buggy-service-mysql
