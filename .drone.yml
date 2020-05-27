@@ -3,7 +3,7 @@ type: docker
 name: default
 
 workspace:
-  path: service
+  base: /go/src
 
 steps:
 - name: publish-docker
