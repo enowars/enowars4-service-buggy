@@ -10,7 +10,7 @@ RUN go get github.com/gorilla/mux
 RUN go get github.com/gorilla/sessions
 RUN go get github.com/go-sql-driver/mysql
 
-COPY buggy /go/src
+COPY service/buggy /go/src
 WORKDIR /go/src/buggy
 
 CMD make run
