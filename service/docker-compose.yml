@@ -1,7 +1,9 @@
 version: '3'
 services:
   mysql:
-    build: ./mysql
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile.local
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
     ports:
@@ -11,7 +13,9 @@ services:
       - MYSQL_ROOT_PASSWORD=root
     restart: "no" # Maybe change this to "always"
   buggy:
-    build: .
+    build:
+        context: .
+        dockerfile: Dockerfile.local
     volumes:
       - ./buggy:/go/src/buggy
     ports:
