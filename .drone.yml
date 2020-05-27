@@ -2,6 +2,9 @@ kind: pipeline
 type: docker
 name: default
 
+workspace:
+  path: service
+
 steps:
 - name: publish-docker
   image: plugins/docker
