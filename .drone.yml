@@ -1,0 +1,40 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: publish-docker
+  image: plugins/docker
+  network_mode: registry-network
+  settings:
+    dockerfile: service/Dockerfile
+    repo: registry:5000/buggy-service
+    registry: registry:5000
+    insecure: true
+- name: publish-docker-mysql
+  image: plugins/docker
+  network_mode: registry-network
+  environment:
+      MYSQL_DATABASE=enodb
+      MYSQL_ROOT_PASSWORD=root
+  settings:
+    dockerfile: service/mysql/Dockerfile
+    repo: registry:5000/buggy-service-mysql
+    registry: registry:5000
+    insecure: true
+
+- name: trigger-vm-image-creation
+  image: plugins/downstream
+  settings:
+    server: https://droneci.sect.tu-berlin.de
+    token:
+      from_secret: trigger_token
+    fork: true
+    repositories:
+      - enowars/Enowars4DevOps@master
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
