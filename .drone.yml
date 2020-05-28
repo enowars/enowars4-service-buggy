@@ -6,6 +6,9 @@ steps:
 - name: publish-docker
   image: plugins/docker
   network_mode: registry-network
+  environment:
+    MYSQL_DATABASE: enodb
+    MYSQL_ROOT_PASSWORD: root
   settings:
     dockerfile: service/Dockerfile
     repo: registry:5000/buggy-service
@@ -14,9 +17,6 @@ steps:
 - name: publish-docker-mysql
   image: plugins/docker
   network_mode: registry-network
-  environment:
-    MYSQL_DATABASE: enodb
-    MYSQL_ROOT_PASSWORD: root
   settings:
     dockerfile: service/mysql/Dockerfile
     repo: registry:5000/buggy-service-mysql

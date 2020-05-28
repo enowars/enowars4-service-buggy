@@ -11,8 +11,9 @@ import (
 )
 
 type account struct {
-	User db.User
-	Auth bool
+	User     db.User
+	Auth     bool
+	Messages []db.Message
 }
 
 type reg struct {
@@ -80,6 +81,7 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			if username != "" && password != "" {
 				insert := db.InsertUser(username, password, "", false)
 				if insert {
+					sendWelcome(username)
 					redirectOnSuccess(username, session, w, req)
 				} else {
 					tpl.ExecuteTemplate(w, "register.gohtml", reg{true, false})
@@ -156,7 +158,11 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// Hot reload
+	tpl = template.Must(template.ParseGlob("templates/*.gohtml"))
 	acc := getAccount(session)
+	messages := db.GetMessages(acc.User.Username)
+	acc.Messages = messages
 	if acc.Auth {
 		tpl.ExecuteTemplate(w, "profile.gohtml", acc)
 	} else {
@@ -188,7 +194,11 @@ func redirectOnSuccess(username string, session *sessions.Session, w http.Respon
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, req, "/profile", http.StatusFound)
+	http.Redirect(w, req, "/", http.StatusFound)
+}
+
+func sendWelcome(username string) {
+	db.AddMessage(username, "buggy-team", "Welcome to the one and only Buggy Store, enjoy your stay!")
 }
 
 // ProductOne : Product page for super buggy

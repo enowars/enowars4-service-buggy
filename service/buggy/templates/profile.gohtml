@@ -13,8 +13,33 @@
         <li><a href="/profile">Profile</a></li>
         <li><a href="/logout">Logout</a></li>
     </ul>
-    <h1>Hello {{.User.Username}}!</h1>
+    <div class="profile">
+        <h1>Profile</h1>
+
+        <label for="username">Username:</label><br>
+        <input type="text" class="noselect" name="username" value="{{.User.Username}}" disabled>
+        <p><i>Username cannot be changed at this time.</i></p><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" class="noselect" name="password" value="" disabled>
+        <p><i>Password not displayed for security reasons.</i></p><br>
+
+        <label for="password">New Password:</label><br>
+        <input type="password" class="noselect" name="password" value="" disabled>
+        <p><i>Password cannot be updated at this time.</i></p>
+
+        <h2>Inbox</h2>
+        <div class="header">
+            <div class="from"><h3>From</h3></div><div class="subject"><h3>Subject</h3></div>
+        </div>
+        <ul class="messages">
+            {{range .Messages}}
+                <li class="message">
+                    <div class="from"><p>{{.From}}</p></div><div class="subject"><p>{{.Content}}</p></div>
+                </li>
+            {{end}}
+        </ul>
+    </div>
 </div>
 </body>
 </html>
-
