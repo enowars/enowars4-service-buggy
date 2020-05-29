@@ -13,4 +13,10 @@ sender char(64),
 message varchar(255)
 );
 
+CREATE TABLE comments (
+name char(64),
+product char(64),
+content varchar(255)
+);
+
 INSERT INTO enodb.users VALUES("admin", "root", "some status", true);

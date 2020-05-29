@@ -3,6 +3,7 @@ package routes
 import (
 	"buggy/go/db"
 	"encoding/gob"
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -14,6 +15,11 @@ type account struct {
 	User     db.User
 	Auth     bool
 	Messages []db.Message
+}
+
+type productpage struct {
+	Account  account
+	Comments []db.Comment
 }
 
 type reg struct {
@@ -201,12 +207,68 @@ func sendWelcome(username string) {
 	db.AddMessage(username, "buggy-team", "Welcome to the one and only Buggy Store, enjoy your stay!")
 }
 
+func sendPreorder(username string, buggy string) {
+	db.AddMessage(username, "buggy-team", fmt.Sprintf("Thank you for preordering the %s! We will inform you when it becomes available ASAP.", buggy))
+}
+
 // ProductOne : Product page for super buggy
 func ProductOne(w http.ResponseWriter, req *http.Request) {
-	tpl.ExecuteTemplate(w, "super-buggy.gohtml", nil)
+	session, err := store.Get(req, "buggy-cookie")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	acc := getAccount(session)
+	page := productpage{}
+	page.Account = acc
+	comments := db.GetComments("super-buggy")
+	page.Comments = comments
+	if acc.Auth {
+		if req.Method == http.MethodPost {
+			req.ParseForm()
+			if req.Form["comment"] != nil {
+				db.AddComment(acc.User.Username, "super-buggy", req.FormValue("comment"))
+				comments := db.GetComments("super-buggy")
+				page.Comments = comments
+			} else {
+				sendPreorder(acc.User.Username, "Super Buggy")
+			}
+			http.Redirect(w, req, "/super-buggy", http.StatusFound)
+		} else {
+			tpl.ExecuteTemplate(w, "super-buggy.gohtml", page)
+		}
+	} else {
+		tpl.ExecuteTemplate(w, "super-buggy.gohtml", page)
+	}
 }
 
 // ProductTwo : Product page for mega buggy
 func ProductTwo(w http.ResponseWriter, req *http.Request) {
-	tpl.ExecuteTemplate(w, "mega-buggy.gohtml", nil)
+	session, err := store.Get(req, "buggy-cookie")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	acc := getAccount(session)
+	page := productpage{}
+	page.Account = acc
+	comments := db.GetComments("mega-buggy")
+	page.Comments = comments
+	if acc.Auth {
+		if req.Method == http.MethodPost {
+			req.ParseForm()
+			if req.Form["comment"] != nil {
+				db.AddComment(acc.User.Username, "mega-buggy", req.FormValue("comment"))
+				comments := db.GetComments("mega-buggy")
+				page.Comments = comments
+			} else {
+				sendPreorder(acc.User.Username, "Mega Buggy")
+			}
+			http.Redirect(w, req, "/mega-buggy", http.StatusFound)
+		} else {
+			tpl.ExecuteTemplate(w, "mega-buggy.gohtml", page)
+		}
+	} else {
+		tpl.ExecuteTemplate(w, "mega-buggy.gohtml", page)
+	}
 }

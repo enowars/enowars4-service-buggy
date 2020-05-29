@@ -24,6 +24,13 @@ type Message struct {
 	Content string
 }
 
+// Comment struct
+type Comment struct {
+	User    string
+	Product string
+	Content string
+}
+
 // InsertUser : Insert user if not present
 func InsertUser(username string, pw string, status string, admin bool) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
@@ -149,13 +156,58 @@ func GetMessages(username string) []Message {
 	for results.Next() {
 		var msg Message
 		err = results.Scan(&msg.To, &msg.From, &msg.Content)
-		log.Printf("%s\n", msg.Content)
 		if err != nil {
 			return []Message{}
 		}
 		messages = append(messages, msg)
 	}
 	return messages
+}
+
+// AddComment : Add comment to product page
+func AddComment(username string, product string, content string) bool {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return false
+	}
+	defer db.Close()
+
+	insert, err := db.Query("INSERT INTO comments VALUES (?, ?, ?)", username, product, content)
+	if err != nil {
+		return false
+	}
+	defer insert.Close()
+
+	return true
+}
+
+// GetComments : Get all Comments for one product
+func GetComments(product string) []Comment {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return []Comment{}
+	}
+	defer db.Close()
+
+	results, err := db.Query("SELECT name, product, content FROM comments WHERE product = ?", product)
+
+	if err != nil {
+		return []Comment{}
+	}
+
+	var comments []Comment
+
+	for results.Next() {
+		var cmnt Comment
+		err = results.Scan(&cmnt.User, &cmnt.Product, &cmnt.Content)
+		if err != nil {
+			return []Comment{}
+		}
+		comments = append(comments, cmnt)
+	}
+	return comments
 }
 
 // PrintDB : Print all "users" table entries
