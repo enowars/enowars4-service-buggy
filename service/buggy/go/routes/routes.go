@@ -2,11 +2,16 @@ package routes
 
 import (
 	"buggy/go/db"
+	"crypto/sha256"
 	"encoding/gob"
+	"encoding/hex"
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
@@ -20,6 +25,10 @@ type account struct {
 type productpage struct {
 	Account  account
 	Comments []db.Comment
+}
+type ticketpage struct {
+	Account account
+	Ticket  db.Ticket
 }
 
 type reg struct {
@@ -164,13 +173,68 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// Hot reload
-	tpl = template.Must(template.ParseGlob("templates/*.gohtml"))
 	acc := getAccount(session)
-	messages := db.GetMessages(acc.User.Username)
+	messages := db.GetMessages(acc.User.Username, "private")
 	acc.Messages = messages
 	if acc.Auth {
 		tpl.ExecuteTemplate(w, "profile.gohtml", acc)
+	} else {
+		http.Redirect(w, req, "/", http.StatusFound)
+	}
+}
+
+// Ticket : Write a support Ticket
+func Ticket(w http.ResponseWriter, req *http.Request) {
+	session, err := store.Get(req, "buggy-cookie")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	acc := getAccount(session)
+	if acc.Auth {
+		if req.Method == http.MethodPost {
+			subject := req.FormValue("subject")
+			message := req.FormValue("message")
+			if subject != "" && message != "" {
+				str := acc.User.Username + strconv.FormatInt(time.Now().Unix(), 10)
+				sha := sha256.Sum256([]byte(str))
+				hash := hex.EncodeToString(sha[:])
+				db.AddMessage("buggy-team", acc.User.Username, hash, message)
+				db.AddTicket(acc.User.Username, subject, hash)
+				db.AddMessage(acc.User.Username, "buggy-team", hash, "Please be aware that the Buggy Store(tm) Team is really busy right now. Replies might be delayed.")
+				http.Redirect(w, req, fmt.Sprintf("/tickets/%s", hash), http.StatusFound)
+			} else {
+				tpl.ExecuteTemplate(w, "ticket.gohtml", acc)
+			}
+		} else {
+			tpl.ExecuteTemplate(w, "ticket.gohtml", acc)
+		}
+	} else {
+		http.Redirect(w, req, "/", http.StatusFound)
+	}
+}
+
+// Tickets : View a ticket
+func Tickets(w http.ResponseWriter, req *http.Request) {
+	session, err := store.Get(req, "buggy-cookie")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	vars := mux.Vars(req)
+	hash := vars["hash"]
+	account := getAccount(session)
+	if account.Auth {
+		if len(hash) == 64 {
+			messages := db.GetAllMessages(hash)
+			account.Messages = messages
+			page := ticketpage{}
+			page.Account = account
+			page.Ticket = db.GetTicket(hash)
+			tpl.ExecuteTemplate(w, "tickets.gohtml", page)
+		} else {
+			http.Redirect(w, req, "/", http.StatusFound)
+		}
 	} else {
 		http.Redirect(w, req, "/", http.StatusFound)
 	}
@@ -204,11 +268,11 @@ func redirectOnSuccess(username string, session *sessions.Session, w http.Respon
 }
 
 func sendWelcome(username string) {
-	db.AddMessage(username, "buggy-team", "Welcome to the one and only Buggy Store, enjoy your stay!")
+	db.AddMessage(username, "buggy-team", "private", "Welcome to the one and only Buggy Store, enjoy your stay!")
 }
 
 func sendPreorder(username string, buggy string) {
-	db.AddMessage(username, "buggy-team", fmt.Sprintf("Thank you for preordering the %s! We will inform you when it becomes available ASAP.", buggy))
+	db.AddMessage(username, "buggy-team", "private", fmt.Sprintf("Thank you for preordering the %s! We will inform you when it becomes available ASAP.", buggy))
 }
 
 // ProductOne : Product page for super buggy

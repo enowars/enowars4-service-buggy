@@ -10,6 +10,7 @@ admin boolean
 CREATE TABLE messages (
 name char(64),
 sender char(64),
+hash char(64),
 message varchar(255)
 );
 
@@ -17,6 +18,12 @@ CREATE TABLE comments (
 name char(64),
 product char(64),
 content varchar(255)
+);
+
+CREATE TABLE tickets (
+name char(64),
+subject char(64),
+hash char(64)
 );
 
 INSERT INTO enodb.users VALUES("admin", "root", "some status", true);

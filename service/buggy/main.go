@@ -22,6 +22,8 @@ func main() {
 	router.HandleFunc("/login", routes.Login)
 	router.HandleFunc("/logout", routes.Logout)
 	router.HandleFunc("/profile", routes.Profile)
+	router.HandleFunc("/tickets", routes.Ticket)
+	router.HandleFunc("/tickets/{hash}", routes.Tickets)
 
 	router.HandleFunc("/super-buggy", routes.ProductOne)
 	router.HandleFunc("/mega-buggy", routes.ProductTwo)

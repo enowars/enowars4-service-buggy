@@ -21,6 +21,7 @@ type User struct {
 type Message struct {
 	To      string
 	From    string
+	Hash    string
 	Content string
 }
 
@@ -29,6 +30,13 @@ type Comment struct {
 	User    string
 	Product string
 	Content string
+}
+
+// Ticket struct
+type Ticket struct {
+	User    string
+	Subject string
+	Hash    string
 }
 
 // InsertUser : Insert user if not present
@@ -119,7 +127,7 @@ func GetUser(username string) User {
 }
 
 // AddMessage : Add message
-func AddMessage(username string, sender string, content string) bool {
+func AddMessage(username string, sender string, hash string, content string) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
 	if err != nil {
@@ -127,7 +135,7 @@ func AddMessage(username string, sender string, content string) bool {
 	}
 	defer db.Close()
 
-	insert, err := db.Query("INSERT INTO messages VALUES (?, ?, ?)", username, sender, content)
+	insert, err := db.Query("INSERT INTO messages VALUES (?, ?, ?, ?)", username, sender, hash, content)
 	if err != nil {
 		return false
 	}
@@ -137,7 +145,7 @@ func AddMessage(username string, sender string, content string) bool {
 }
 
 // GetMessages : Return Messages
-func GetMessages(username string) []Message {
+func GetMessages(username string, hash string) []Message {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
 	if err != nil {
@@ -145,7 +153,7 @@ func GetMessages(username string) []Message {
 	}
 	defer db.Close()
 
-	results, err := db.Query("SELECT name, sender, message FROM messages WHERE name = ?", username)
+	results, err := db.Query("SELECT name, sender, hash, message FROM messages WHERE name = ? and hash = ?", username, hash)
 
 	if err != nil {
 		return []Message{}
@@ -155,7 +163,35 @@ func GetMessages(username string) []Message {
 
 	for results.Next() {
 		var msg Message
-		err = results.Scan(&msg.To, &msg.From, &msg.Content)
+		err = results.Scan(&msg.To, &msg.From, &msg.Hash, &msg.Content)
+		if err != nil {
+			return []Message{}
+		}
+		messages = append(messages, msg)
+	}
+	return messages
+}
+
+// GetAllMessages : Return Messages from Hash
+func GetAllMessages(hash string) []Message {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return []Message{}
+	}
+	defer db.Close()
+
+	results, err := db.Query("SELECT name, sender, hash, message FROM messages WHERE hash = ?", hash)
+
+	if err != nil {
+		return []Message{}
+	}
+
+	var messages []Message
+
+	for results.Next() {
+		var msg Message
+		err = results.Scan(&msg.To, &msg.From, &msg.Hash, &msg.Content)
 		if err != nil {
 			return []Message{}
 		}
@@ -208,6 +244,42 @@ func GetComments(product string) []Comment {
 		comments = append(comments, cmnt)
 	}
 	return comments
+}
+
+// AddTicket : Add ticket to database
+func AddTicket(username string, subject string, hash string) bool {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return false
+	}
+	defer db.Close()
+
+	insert, err := db.Query("INSERT INTO tickets VALUES (?, ?, ?)", username, subject, hash)
+	if err != nil {
+		return false
+	}
+	defer insert.Close()
+
+	return true
+}
+
+// GetTicket : Return User from db if existing
+func GetTicket(hash string) Ticket {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return Ticket{}
+	}
+	defer db.Close()
+
+	var ticket Ticket
+	err = db.QueryRow("SELECT name, subject, hash FROM tickets WHERE hash = ?", hash).Scan(&ticket.User, &ticket.Subject, &ticket.Hash)
+
+	if err != nil {
+		return Ticket{}
+	}
+	return ticket
 }
 
 // PrintDB : Print all "users" table entries

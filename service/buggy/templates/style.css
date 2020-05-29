@@ -127,6 +127,10 @@ img {
     font-weight: normal;
 }
 
+.profile h3 {
+    font-weight: normal;
+}
+
 .profile input {
     display: inline;
     margin: 0 0 30px 0;
@@ -138,7 +142,11 @@ img {
 
 .profile label {
     font-size: 25px;
-    height: 500px;
+}
+
+.profile textarea {
+    width: 100%;
+    height: 70px;
 }
 
 .header {
@@ -199,6 +207,16 @@ img {
     padding-left: 5px;
     display: inline-block;
     overflow-y: auto;
+}
+
+.ticket {
+    width: 600px;
+    margin: 50px auto;
+    text-align: left;
+}
+
+.ticket textarea {
+    width: 400px;
 }
 
 .product {
