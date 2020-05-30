@@ -10,7 +10,8 @@ RUN go get github.com/gorilla/mux
 RUN go get github.com/gorilla/sessions
 RUN go get github.com/go-sql-driver/mysql
 
-COPY service/buggy /go/src
+COPY service/buggy /go/src/buggy
 WORKDIR /go/src/buggy
 
-CMD make run
+ENTRYPOINT ["make", "run"]
+

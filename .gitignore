@@ -20,3 +20,5 @@ main
 # We don't really need these
 go.mod
 go.sum
+
+testing
