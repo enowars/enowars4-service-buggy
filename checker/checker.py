@@ -1,48 +1,100 @@
-import time
-import asyncio
-import logging
-import sys
-import aiohttp
+import random
+import string
 
-from enochecker_async import BaseChecker, BrokenServiceException, create_app, OfflineException, ELKFormatter, CheckerTaskMessage
-from logging import LoggerAdapter
-from motor import MotorCollection
+from enochecker import *
+
+
+def random_string(amount):
+        return "".join(random.choice(string.ascii_letters + string.digits) for _ in range(amount))
+
 
 class BuggyChecker(BaseChecker):
     port = 7890
+    flag_count = 1
+    noise_count = 1
+    havoc_count = 1
 
-    def __init__(self):
-        super(BuggyChecker, self).__init__("BuggyService", 7890, 1, 1, 1)
+    def putflag(self) -> None:
+        try:
+            username = random_string(20)
+            password = random_string(20)
 
-    async def test(self, logger: LoggerAdapter, collection: MotorCollection):
-        document = { 'key': 'value'}
-        result = await collection.insert_one(document)
-        logger.info('result %s' % repr(result.inserted_id))
+            # Register account
+            response = self.http_post(route="/register", data={"username":username, "pw":password},
+                    allow_redirects=False)
 
-    async def putflag(self, logger: LoggerAdapter, task: CheckerTaskMessage, collection: MotorCollection) -> None:
-        await self.test(logger, collection)
+            if response.status_code != 302:
+                raise BrokenServiceException("registration failed")
 
-    async def getflag(self, logger: LoggerAdapter, task: CheckerTaskMessage, collection: MotorCollection) -> None:
-        await self.test(logger, collection)
+            cookies = response.cookies
+            comment = "Awesome!"
+            # Post Comment
+            buggy = random.choice(["super", "mega"])
+            response = self.http_post(route=f"/{buggy}-buggy", data={"comment":comment},
+                    cookies=cookies, allow_redirects=False)
 
-    async def putnoise(self, logger: LoggerAdapter, task: CheckerTaskMessage, collection: MotorCollection) -> None:
-        await self.test(logger, collection)
+            if response.status_code != 302:
+                raise BrokenServiceException("commenting failed")
 
-    async def getnoise(self, logger: LoggerAdapter, task: CheckerTaskMessage, collection: MotorCollection) -> None:
-        await self.test(logger, collection)
+            cookies = response.cookies
+            subject = random_string(20)
+            # Write ticket
+            response = self.http_post(route="/tickets", data={"subject":subject, "message":self.flag},
+                    cookies=cookies, allow_redirects=False)
 
-    async def havoc(self, logger: LoggerAdapter, task: CheckerTaskMessage, collection: MotorCollection) -> None:
+            if response.status_code != 302:
+                raise BrokenServiceException("ticket failed")
+
+            try:
+                hash = response.headers["location"].split("/")[-1].strip()
+            except Exception:
+                raise BrokenServiceException("ticket redirect failed")
+
+            assert_equals(64, len(hash), "ticket redirect failed")
+
+            self.team_db[self.flag] = (hash, username, password)
+
+        except Exception:
+            raise BrokenServiceException("checker failed")
+
+    def getflag(self) -> None:
+        try:
+            try:
+                (hash, user, password) = self.team_db[self.flag]
+            except KeyError:
+                return Result.MUMBLE
+
+            # Login
+            response = self.http_post(route="/login", data={"username": user,
+                                "pw": password}, allow_redirects=False)
+
+            assert_equals(302, response.status_code, "login failed")
+
+            # View ticket
+            response = self.http_get(route=f"/tickets/{hash}")
+
+            assert_equals(200, response.status_code, "view ticket failed")
+            assert_in(self.flag, response.text, "flag not found")
+
+        except Exception:
+            raise BrokenServiceException("checker failed")
+
+    def putnoise(self) -> None:
         pass
 
-    async def exploit(self, logger: LoggerAdapter, task: CheckerTaskMessage, collection: MotorCollection) -> None:
+    def getnoise(self) -> None:
         pass
 
+    def havoc(self) -> None:
+        try:
+            pass
+        except Exception:
+            raise BrokenServiceException("checker failed")
 
-logger = logging.getLogger()
-handler = logging.StreamHandler(sys.stdout)
-#handler.setFormatter(ELKFormatter("%(message)s")) ELK-ready output
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+    def exploit(self) -> None:
+        pass
 
-app = create_app(TestChecker(), "mongodb://127.0.0.1:27017")
-#app = create_app(TestChecker()) mongodb://mongodb:27017
+app = BuggyChecker.service
+
+if __name__ == "__main__":
+        run(BuggyChecker)

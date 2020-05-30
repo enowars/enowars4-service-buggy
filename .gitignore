@@ -22,3 +22,9 @@ go.mod
 go.sum
 
 testing
+
+# virtual env
+venv
+
+# checker
+.data
