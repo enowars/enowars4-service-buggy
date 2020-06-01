@@ -1,19 +1,21 @@
-FROM python
+FROM python:3.8
 LABEL maintainer="ENOFLAG <mail@enoflag.de>"
 
+# Install python3 and uswgi
+RUN apt-get update
+RUN apt-get install -y git
+
+# use python3
+RUN pip3 install uwsgi
+
+# copy our files in.
 WORKDIR /checker
+COPY ./requirements.txt /checker/requirements.txt
+RUN pip3 install -r requirements.txt
+COPY . .
 
-# Install local enochecker_async version
-COPY requirements.txt requirements.txt
-RUN python3 -m pip install -r requirements.txt
-COPY README.md README.md
-COPY setup.py setup.py
-COPY enochecker_async enochecker_async
-RUN python3 setup.py install
-
-# Install example
-COPY example example
-WORKDIR /checker/example
-RUN python3 -m pip install -r requirements.txt
-
-ENTRYPOINT ["python", "checker.py" ]
+ENTRYPOINT [ "uwsgi", "--uid", "uwsgi", \
+               "--socket", "0.0.0.0:3031", \
+               "--protocol", "http", \
+               "--http-keepalive", \
+               "--ini", "/checker/uwsgi.ini" ]
