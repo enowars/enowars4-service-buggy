@@ -4,14 +4,13 @@ services:
     build:
       context: ./mysql
       dockerfile: Dockerfile.local
-    # image: mysql:8.0
     environment:
       - MYSQL_DATABASE=enodb
       - MYSQL_ROOT_PASSWORD=root
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
-    ports:
-      - "3306:3306"
-    restart: "no" # Maybe change this to "always"
+    # ports:
+    #   - "3306:3306"
+    restart: "always"
   buggy:
     build:
         context: .
@@ -20,7 +19,7 @@ services:
       - ./buggy:/go/src/buggy
     ports:
       - "7890:7890"
-    restart: "no" # Maybe change this to "always"
+    restart: "always"
     environment:
       - MYSQL_DATABASE=enodb
       - MYSQL_ROOT_PASSWORD=root

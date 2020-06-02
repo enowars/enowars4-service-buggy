@@ -28,3 +28,4 @@ venv
 
 # checker
 .data
+buggy_db_data
