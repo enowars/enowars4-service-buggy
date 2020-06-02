@@ -13,3 +13,8 @@ services:
      - MONGO_PASSWORD=enoislife
   buggy-db:
     image: mongo
+    volumes:
+      - ./buggy_db_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: enoislove
+      MONGO_INITDB_ROOT_PASSWORD: enoislife
