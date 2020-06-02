@@ -5,7 +5,7 @@ from enochecker import *
 
 
 def random_string(amount):
-        return "".join(random.choice(string.ascii_letters + string.digits) for _ in range(amount))
+    return "".join(random.choice(string.ascii_letters + string.digits) for _ in range(amount))
 
 
 class BuggyChecker(BaseChecker):
@@ -15,6 +15,7 @@ class BuggyChecker(BaseChecker):
     havoc_count = 1
 
     def putflag(self) -> None:
+        self.logger.info("Starting putflag")
         try:
             username = random_string(20)
             password = random_string(20)
@@ -58,6 +59,7 @@ class BuggyChecker(BaseChecker):
             raise BrokenServiceException("checker failed")
 
     def getflag(self) -> None:
+        self.logger.info("Starting getflag")
         try:
             try:
                 (hash, user, password) = self.team_db[self.flag]
@@ -80,12 +82,15 @@ class BuggyChecker(BaseChecker):
             raise BrokenServiceException("checker failed")
 
     def putnoise(self) -> None:
+        self.logger.info("Starting putnoise")
         pass
 
     def getnoise(self) -> None:
+        self.logger.info("Starting getnoise")
         pass
 
     def havoc(self) -> None:
+        self.logger.info("Starting havoc")
         try:
             pass
         except Exception:
