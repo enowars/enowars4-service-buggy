@@ -14,14 +14,15 @@ name char(64),
 sender char(64),
 hash char(64),
 message varchar(255),
-INDEX (hash)
 );
 
 CREATE TABLE comments (
+id int NOT NULL AUTO_INCREMENT,
 name char(64),
 product char(64),
 content varchar(255),
-INDEX (product)
+PRIMARY KEY (id),
+INDEX (id)
 );
 
 CREATE TABLE tickets (

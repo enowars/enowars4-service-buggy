@@ -209,8 +209,9 @@ func AddComment(username string, product string, content string) bool {
 	}
 	defer db.Close()
 
-	insert, err := db.Query("INSERT INTO comments VALUES (?, ?, ?)", username, product, content)
+	insert, err := db.Query("INSERT INTO comments VALUES (0, ?, ?, ?)", username, product, content)
 	if err != nil {
+		log.Println("insert failed")
 		return false
 	}
 	defer insert.Close()
@@ -227,9 +228,10 @@ func GetComments(product string) []Comment {
 	}
 	defer db.Close()
 
-	results, err := db.Query("SELECT name, product, content FROM comments WHERE product = ?", product)
+	results, err := db.Query("SELECT name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 20", product)
 
 	if err != nil {
+		log.Println("select failed")
 		return []Comment{}
 	}
 
