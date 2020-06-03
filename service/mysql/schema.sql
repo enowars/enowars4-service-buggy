@@ -13,7 +13,7 @@ CREATE TABLE messages (
 name char(64),
 sender char(64),
 hash char(64),
-message varchar(255),
+message varchar(255)
 );
 
 CREATE TABLE comments (
@@ -30,7 +30,7 @@ name char(64),
 subject char(64),
 hash char(64),
 PRIMARY KEY (hash),
-UNIQUE INDEX (hash)
+INDEX (hash)
 );
 
 INSERT INTO enodb.users VALUES("admin", "root", "some status", true);
