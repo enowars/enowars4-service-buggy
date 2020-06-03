@@ -61,6 +61,7 @@ class BuggyChecker(BaseChecker):
 
         except Exception:
             raise BrokenServiceException("checker failed")
+        self.logger.debug("putflag done")
 
     def getflag(self) -> None:
         self.logger.debug("Starting getflag")
@@ -88,6 +89,7 @@ class BuggyChecker(BaseChecker):
 
         except Exception:
             raise BrokenServiceException("checker failed")
+        self.logger.debug("getflag done")
 
     def putnoise(self) -> None:
         self.logger.info("Starting putnoise")
