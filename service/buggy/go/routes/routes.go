@@ -174,7 +174,7 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	acc := getAccount(session)
-	messages := db.GetMessages(acc.User.Username, "private")
+	messages := db.GetMessages(acc.User.Username)
 	acc.Messages = messages
 	if acc.Auth {
 		tpl.ExecuteTemplate(w, "profile.gohtml", acc)

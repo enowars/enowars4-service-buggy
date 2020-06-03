@@ -78,7 +78,7 @@ func AuthUser(username string, pw string) bool {
 
 	// Ohne "BINARY" case-insensitiv -> vuln falls man zb Account mit username==admIN erstellen kann
 	// Wollen wir das als leichte vuln?
-	err = db.QueryRow("SELECT name, password FROM users WHERE name = ?", username).Scan(&userReq.Username, &userReq.Password)
+	// err = db.QueryRow("SELECT name, password FROM users WHERE name = ?", username).Scan(&userReq.Username, &userReq.Password)
 	if err != nil {
 		return false
 	}
@@ -145,7 +145,7 @@ func AddMessage(username string, sender string, hash string, content string) boo
 }
 
 // GetMessages : Return Messages
-func GetMessages(username string, hash string) []Message {
+func GetMessages(username string) []Message {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
 	if err != nil {
@@ -153,7 +153,7 @@ func GetMessages(username string, hash string) []Message {
 	}
 	defer db.Close()
 
-	results, err := db.Query("SELECT name, sender, hash, message FROM messages WHERE name = ? and hash = ?", username, hash)
+	results, err := db.Query("SELECT name, sender, hash, message FROM messages WHERE name = ?", username)
 
 	if err != nil {
 		return []Message{}
