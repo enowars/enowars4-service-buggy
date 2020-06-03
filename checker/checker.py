@@ -84,8 +84,10 @@ class BuggyChecker(BaseChecker):
             response = self.http_get(route=f"/tickets/{hash}")
             self.logger.debug("ticket loaded")
 
-            assert_equals(200, response.status_code, "view ticket failed")
-            assert_in(self.flag, response.text, "flag not found")
+            if response.status_code != 200:
+                raise BrokenServiceException(f"view ticket failed, got response code {response.status_code}, excpected 200")
+            if self.flag not in response.text:
+                raise BrokenServiceException(f"flag ({self.flag}) not found in response text : {response.text}")
 
         except Exception:
             raise BrokenServiceException("checker failed")
