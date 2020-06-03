@@ -59,8 +59,9 @@ class BuggyChecker(BaseChecker):
             self.logger.debug(f"saving hash : {hash}")
             self.team_db[self.flag] = (hash, username, password)
 
-        except Exception:
-            raise BrokenServiceException("checker failed")
+        except Exception as e:
+            self.logger.error(f"putflag failed with {e}")
+            raise BrokenServiceException("putflag failed")
         self.logger.debug("putflag done")
 
     def getflag(self) -> None:
@@ -85,12 +86,15 @@ class BuggyChecker(BaseChecker):
             self.logger.debug("ticket loaded")
 
             if response.status_code != 200:
-                raise BrokenServiceException(f"view ticket failed, got response code {response.status_code}, excpected 200")
+                self.logger.error(f"expected status 200, got {response.status_code}")
+                raise BrokenServiceException(f"view ticket failed")
             if self.flag not in response.text:
-                raise BrokenServiceException(f"flag ({self.flag}) not found in response text : {response.text}")
+                self.logger.error(f"flag {self.flag} not found in {response.text}")
+                raise BrokenServiceException(f"flag not found")
 
-        except Exception:
-            raise BrokenServiceException("checker failed")
+        except Exception as e:
+            self.logger.error(f"getflag failed with {e}")
+            raise BrokenServiceException("getflag failed")
         self.logger.debug("getflag done")
 
     def putnoise(self) -> None:
