@@ -13,14 +13,14 @@ CREATE TABLE messages (
 name char(64),
 sender char(64),
 hash char(64),
-message varchar(255)
+message varchar(512)
 );
 
 CREATE TABLE comments (
 id int NOT NULL AUTO_INCREMENT,
 name char(64),
 product char(64),
-content varchar(255),
+content varchar(512),
 PRIMARY KEY (id),
 INDEX (id)
 );
