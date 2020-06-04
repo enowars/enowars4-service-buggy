@@ -3,6 +3,7 @@ import random
 import string
 
 from enochecker import *
+from enochecker.utils import sha256ify
 
 
 def random_string(amount):
@@ -58,7 +59,7 @@ class BuggyChecker(BaseChecker):
             assert_equals(64, len(hash), "ticket redirect failed")
 
             self.logger.debug(f"saving hash : {hash}")
-            self.team_db[self.flag] = (hash, username, password)
+            self.team_db[sha256ify(self.flag)] = (hash, username, password)
 
         except Exception as e:
             self.logger.error(f"putflag failed with {e}")
@@ -69,8 +70,9 @@ class BuggyChecker(BaseChecker):
         self.logger.debug("Starting getflag")
         try:
             try:
-                (hash, user, password) = self.team_db[self.flag]
-            except KeyError:
+                (hash, user, password) = self.team_db[sha256ify(self.flag)]
+            except KeyError as e:
+                self.logger.warning("flag info missing, {e}")
                 return Result.MUMBLE
 
             # Login
