@@ -1,3 +1,4 @@
+import html
 import random
 import string
 
@@ -88,7 +89,7 @@ class BuggyChecker(BaseChecker):
             if response.status_code != 200:
                 self.logger.error(f"expected status 200, got {response.status_code}")
                 raise BrokenServiceException(f"view ticket failed")
-            if self.flag not in response.text:
+            if self.flag not in html.unescape(response.text):
                 self.logger.error(f"flag {self.flag} not found in {response.text}")
                 raise BrokenServiceException(f"flag not found")
 
