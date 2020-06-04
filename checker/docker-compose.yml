@@ -4,7 +4,7 @@ services:
   buggy-backend:
     build: .
     ports:
-      - 7891:3031
+      - 7891:8000
     environment:
      - MONGO_ENABLED=1
      - MONGO_HOST=buggy-db
