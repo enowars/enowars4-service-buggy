@@ -13,7 +13,9 @@ CREATE TABLE messages (
 name char(64),
 sender char(64),
 hash char(64),
-message varchar(512)
+message varchar(512),
+INDEX (hash),
+INDEX (name)
 );
 
 CREATE TABLE comments (
