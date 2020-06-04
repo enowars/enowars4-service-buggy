@@ -72,7 +72,7 @@ class BuggyChecker(BaseChecker):
             try:
                 (hash, user, password) = self.team_db[sha256ify(self.flag)]
             except KeyError as e:
-                self.logger.warning("flag info missing, {e}")
+                self.logger.warning(f"flag info missing, {e}")
                 return Result.MUMBLE
 
             # Login
