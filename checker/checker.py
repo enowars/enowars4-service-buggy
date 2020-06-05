@@ -78,12 +78,12 @@ class BuggyChecker(BaseChecker):
             # Login
             response = self.http_post(route="/login", data={"username": user,
                                 "pw": password}, allow_redirects=False)
-            self.logger.debug("logged in")
 
             if 302 != response.status_code:
                 self.logger.error(f"expected 302, got {response.status_code}")
                 self.logger.error(f"login failed with user : {user} pw : {password} response : {response.text}")
                 raise BrokenServiceException("getflag login failed")
+            self.logger.debug("logged in")
 
             # TODO: View comment?
 
