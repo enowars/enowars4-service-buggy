@@ -1,1 +1,2 @@
-git+https://github.com/enowars/enochecker@log-standard
+enochecker==0.1.0
+gunicorn[eventlet]
