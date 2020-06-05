@@ -19,6 +19,40 @@ steps:
     repo: registry:5000/buggy-service-mysql
     registry: registry:5000
     insecure: true
+- name: publish-service-sources
+  image: alpine/git
+  environment:
+    SSH_KEY:
+      from_secret: github_bot_ssh_key
+  commands:
+    # write the ssh key to disk
+    - mkdir /root/.ssh
+    - echo -n "$SSH_KEY" > /root/.ssh/id_rsa
+    - chmod 600 /root/.ssh/id_rsa
+
+    # add github to known hosts
+    - touch /root/.ssh/known_hosts
+    - chmod 600 /root/.ssh/known_hosts
+    - ssh-keyscan -H github.com > /etc/ssh/ssh_known_hosts 2> /dev/null
+
+    # push service changes
+    - git clone git@github.com:enowars/enowars4-vulnbox-services.git
+    - cd enowars4-vulnbox-services
+    - rm -rf buggy/
+    - cp -r ../service/ buggy/
+    - git add buggy/
+    - git commit -m 'Update buggy service'
+    - git push origin HEAD:master
+
+    # push checker changes
+    - cd -
+    - git clone git@github.com:enowars/enowars4-vulnbox-checkers.git
+    - cd enowars4-vulnbox-checkers
+    - rm -rf buggy/
+    - cp -r ../checker/ buggy/
+    - git add buggy/
+    - git commit -m 'Update buggy checker'
+    - git push origin HEAD:master
 
 - name: trigger-vm-image-creation
   image: plugins/downstream
