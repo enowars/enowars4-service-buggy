@@ -42,7 +42,7 @@ steps:
     - cp -r ../service/ buggy/
     - git add buggy/
     - git commit -m 'Update buggy service'
-    - git push origin HEAD:master
+    - git push origin HEAD:master || true
 
     # push checker changes
     - cd -
@@ -52,7 +52,7 @@ steps:
     - cp -r ../checker/ buggy/
     - git add buggy/
     - git commit -m 'Update buggy checker'
-    - git push origin HEAD:master
+    - git push origin HEAD:master || true
 
 - name: trigger-vm-image-creation
   image: plugins/downstream
