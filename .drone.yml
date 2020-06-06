@@ -41,7 +41,7 @@ steps:
     - rm -rf buggy/
     - cp -r ../service/ buggy/
     - git add buggy/
-    - git commit -m 'Update buggy service'
+    - git commit -m 'Update buggy service' || true
     - git push origin HEAD:master || true
 
     # push checker changes
@@ -51,7 +51,7 @@ steps:
     - rm -rf buggy/
     - cp -r ../checker/ buggy/
     - git add buggy/
-    - git commit -m 'Update buggy checker'
+    - git commit -m 'Update buggy checker' || true
     - git push origin HEAD:master || true
 
 - name: trigger-vm-image-creation
