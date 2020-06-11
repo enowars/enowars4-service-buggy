@@ -16,7 +16,7 @@ steps:
   image: plugins/docker
   network_mode: registry-network
   settings:
-    context: service
+    context: service/mysql
     dockerfile: service/mysql/Dockerfile
     repo: registry:5000/buggy-service-mysql
     registry: registry:5000
