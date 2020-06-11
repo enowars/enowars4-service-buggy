@@ -18,90 +18,79 @@ class BuggyChecker(BaseChecker):
 
     def putflag(self) -> None:
         self.logger.debug("Starting putflag")
+        username = random_string(20)
+        password = random_string(20)
+
+        # Register account
+        response = self.http_post(route="/register", data={"username":username, "pw":password},
+                allow_redirects=False)
+        self.logger.debug("register done")
+
+        if response.status_code != 302:
+            raise BrokenServiceException("registration failed")
+
+        cookies = response.cookies
+        comment = "Awesome!"
+        # Post Comment
+        buggy = random.choice(["super", "mega"])
+        response = self.http_post(route=f"/{buggy}-buggy", data={"comment":comment},
+                cookies=cookies, allow_redirects=False)
+        self.logger.debug("comment written")
+
+        if response.status_code != 302:
+            raise BrokenServiceException("commenting failed")
+
+        cookies = response.cookies
+        subject = random_string(20)
+        # Write ticket
+        response = self.http_post(route="/tickets", data={"subject":subject, "message":self.flag},
+                cookies=cookies, allow_redirects=False)
+        self.logger.debug("ticket written")
+
+        if response.status_code != 302:
+            raise BrokenServiceException("ticket failed")
+
         try:
-            username = random_string(20)
-            password = random_string(20)
+            hash = response.headers["location"].split("/")[-1].strip()
+        except Exception:
+            raise BrokenServiceException("ticket redirect failed")
 
-            # Register account
-            response = self.http_post(route="/register", data={"username":username, "pw":password},
-                    allow_redirects=False)
-            self.logger.debug("register done")
+        assert_equals(64, len(hash), "ticket redirect failed")
 
-            if response.status_code != 302:
-                raise BrokenServiceException("registration failed")
-
-            cookies = response.cookies
-            comment = "Awesome!"
-            # Post Comment
-            buggy = random.choice(["super", "mega"])
-            response = self.http_post(route=f"/{buggy}-buggy", data={"comment":comment},
-                    cookies=cookies, allow_redirects=False)
-            self.logger.debug("comment written")
-
-            if response.status_code != 302:
-                raise BrokenServiceException("commenting failed")
-
-            cookies = response.cookies
-            subject = random_string(20)
-            # Write ticket
-            response = self.http_post(route="/tickets", data={"subject":subject, "message":self.flag},
-                    cookies=cookies, allow_redirects=False)
-            self.logger.debug("ticket written")
-
-            if response.status_code != 302:
-                raise BrokenServiceException("ticket failed")
-
-            try:
-                hash = response.headers["location"].split("/")[-1].strip()
-            except Exception:
-                raise BrokenServiceException("ticket redirect failed")
-
-            assert_equals(64, len(hash), "ticket redirect failed")
-
-            self.logger.debug(f"saving hash : {hash}")
-            self.team_db[sha256ify(self.flag)] = (hash, username, password)
-
-        except Exception as e:
-            self.logger.error(f"putflag failed with {e}")
-            raise BrokenServiceException("putflag failed")
-        self.logger.debug("putflag done")
+        self.logger.debug(f"saving hash : {hash}")
+        self.team_db[sha256ify(self.flag)] = (hash, username, password)
 
     def getflag(self) -> None:
         self.logger.debug("Starting getflag")
         try:
-            try:
-                (hash, user, password) = self.team_db[sha256ify(self.flag)]
-            except KeyError as e:
-                self.logger.warning(f"flag info missing, {e}")
-                return Result.MUMBLE
+            (hash, user, password) = self.team_db[sha256ify(self.flag)]
+        except KeyError as e:
+            self.logger.warning(f"flag info missing, {e}")
+            return Result.MUMBLE
 
-            # Login
-            response = self.http_post(route="/login", data={"username": user,
-                                "pw": password}, allow_redirects=False)
+        # Login
+        response = self.http_post(route="/login", data={"username": user,
+                            "pw": password}, allow_redirects=False)
 
-            if 302 != response.status_code:
-                self.logger.error(f"expected 302, got {response.status_code}")
-                self.logger.error(f"login failed with user : {user} pw : {password} response : {response.text}")
-                raise BrokenServiceException("getflag login failed")
-            self.logger.debug("logged in")
+        if 302 != response.status_code:
+            self.logger.error(f"expected 302, got {response.status_code}")
+            self.logger.error(f"login failed with user : {user} pw : {password} response : {response.text}")
+            raise BrokenServiceException("getflag login failed")
+        self.logger.debug("logged in")
 
-            # TODO: View comment?
+        # TODO: View comment?
 
-            # View ticket
-            response = self.http_get(route=f"/tickets/{hash}")
-            self.logger.debug("ticket loaded")
+        # View ticket
+        response = self.http_get(route=f"/tickets/{hash}")
+        self.logger.debug("ticket loaded")
 
-            if response.status_code != 200:
-                self.logger.error(f"expected status 200, got {response.status_code}")
-                raise BrokenServiceException(f"view ticket failed")
-            if self.flag not in html.unescape(response.text):
-                self.logger.error(f"flag {self.flag} not found in {response.text}")
-                raise BrokenServiceException(f"flag not found")
+        if response.status_code != 200:
+            self.logger.error(f"expected status 200, got {response.status_code}")
+            raise BrokenServiceException(f"view ticket failed")
+        if self.flag not in html.unescape(response.text):
+            self.logger.error(f"flag {self.flag} not found in {response.text}")
+            raise BrokenServiceException(f"flag not found")
 
-        except Exception as e:
-            self.logger.error(f"getflag failed with {e}")
-            raise BrokenServiceException("getflag failed")
-        self.logger.debug("getflag done")
 
     def putnoise(self) -> None:
         self.logger.info("Starting putnoise")
