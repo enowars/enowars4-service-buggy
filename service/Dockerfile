@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM golang:1.14
 
 RUN apt-get update && apt-get install -y make gcc
 
@@ -10,7 +10,7 @@ RUN go get github.com/gorilla/mux
 RUN go get github.com/gorilla/sessions
 RUN go get github.com/go-sql-driver/mysql
 
-COPY service/buggy /go/src/buggy
+COPY buggy /go/src/buggy
 WORKDIR /go/src/buggy
 
 ENTRYPOINT ["make", "run"]
