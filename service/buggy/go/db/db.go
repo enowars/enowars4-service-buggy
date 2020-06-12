@@ -27,9 +27,10 @@ type Message struct {
 
 // Comment struct
 type Comment struct {
-	User    string
-	Product string
-	Content string
+	Timestamp string
+	User      string
+	Product   string
+	Content   string
 }
 
 // Ticket struct
@@ -209,9 +210,8 @@ func AddComment(username string, product string, content string) bool {
 	}
 	defer db.Close()
 
-	insert, err := db.Query("INSERT INTO comments VALUES (0, ?, ?, ?)", username, product, content)
+	insert, err := db.Query("INSERT INTO comments (name, product, content) VALUES (?, ?, ?)", username, product, content)
 	if err != nil {
-		log.Println("insert failed")
 		return false
 	}
 	defer insert.Close()
@@ -228,7 +228,7 @@ func GetComments(product string) []Comment {
 	}
 	defer db.Close()
 
-	results, err := db.Query("SELECT name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 20", product)
+	results, err := db.Query("SELECT created_at, name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 20", product)
 
 	if err != nil {
 		return []Comment{}
@@ -238,7 +238,7 @@ func GetComments(product string) []Comment {
 
 	for results.Next() {
 		var cmnt Comment
-		err = results.Scan(&cmnt.User, &cmnt.Product, &cmnt.Content)
+		err = results.Scan(&cmnt.Timestamp, &cmnt.User, &cmnt.Product, &cmnt.Content)
 		if err != nil {
 			return []Comment{}
 		}
