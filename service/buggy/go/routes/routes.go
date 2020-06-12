@@ -20,6 +20,7 @@ type account struct {
 	User     db.User
 	Auth     bool
 	Messages []db.Message
+	Tickets  []db.Ticket
 }
 
 type productpage struct {
@@ -175,7 +176,9 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 	}
 	acc := getAccount(session)
 	messages := db.GetMessages(acc.User.Username)
+	tickets := db.GetTickets(acc.User.Username)
 	acc.Messages = messages
+	acc.Tickets = tickets
 	if acc.Auth {
 		tpl.ExecuteTemplate(w, "profile.gohtml", acc)
 	} else {
@@ -227,11 +230,15 @@ func Tickets(w http.ResponseWriter, req *http.Request) {
 	if account.Auth {
 		if len(hash) == 64 {
 			messages := db.GetAllMessages(hash)
-			account.Messages = messages
-			page := ticketpage{}
-			page.Account = account
-			page.Ticket = db.GetTicket(hash)
-			tpl.ExecuteTemplate(w, "tickets.gohtml", page)
+			if len(messages) < 1 {
+				http.Redirect(w, req, "/", http.StatusFound)
+			} else {
+				account.Messages = messages
+				page := ticketpage{}
+				page.Account = account
+				page.Ticket = db.GetTicket(hash)
+				tpl.ExecuteTemplate(w, "tickets.gohtml", page)
+			}
 		} else {
 			http.Redirect(w, req, "/", http.StatusFound)
 		}
