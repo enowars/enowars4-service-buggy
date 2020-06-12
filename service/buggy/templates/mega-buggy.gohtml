@@ -48,6 +48,7 @@
         <ul class="comments">
             {{range .Comments}}
                 <li class="comment">
+                    <div class="cmnt-content"><p>{{.Timestamp}}</p></div>
                     <div class="commenter"><h3>{{.User}}</h3></div>
                     <div class="cmnt-content"><p>{{.Content}}</p></div>
                 </li>
