@@ -231,7 +231,6 @@ func GetComments(product string) []Comment {
 	results, err := db.Query("SELECT name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 20", product)
 
 	if err != nil {
-		log.Println("select failed")
 		return []Comment{}
 	}
 
@@ -266,7 +265,7 @@ func AddTicket(username string, subject string, hash string) bool {
 	return true
 }
 
-// GetTicket : Return User from db if existing
+// GetTicket : Return Ticket from db if existing
 func GetTicket(hash string) Ticket {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -282,6 +281,35 @@ func GetTicket(hash string) Ticket {
 		return Ticket{}
 	}
 	return ticket
+}
+
+// GetTickets : Return Tickets for user
+func GetTickets(username string) []Ticket {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return []Ticket{}
+	}
+	defer db.Close()
+
+	results, err := db.Query("SELECT name, subject, hash FROM tickets WHERE name = ? LIMIT 10", username)
+
+	if err != nil {
+		return []Ticket{}
+	}
+
+	var tickets []Ticket
+
+	for results.Next() {
+		var ticket Ticket
+		err = results.Scan(&ticket.User, &ticket.Subject, &ticket.Hash)
+		if err != nil {
+			return []Ticket{}
+		}
+		tickets = append(tickets, ticket)
+	}
+
+	return tickets
 }
 
 // PrintDB : Print all "users" table entries

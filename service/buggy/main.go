@@ -4,7 +4,6 @@ import (
 	"buggy/go/routes"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -30,11 +29,4 @@ func main() {
 
 	fmt.Println("Running server on port 7890")
 	log.Fatal(http.ListenAndServe(":7890", router))
-}
-
-// First vuln (?), predictable admin cookie
-func initCookies() {
-	//rand.Seed(<team_id>)
-	var adminCookie = rand.Intn(1000000)
-	fmt.Printf("Using admin cookie %d\n", adminCookie)
 }

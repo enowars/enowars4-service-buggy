@@ -9,8 +9,6 @@ services:
     restart: "always"
   buggy:
     build: .
-    volumes:
-      - ./buggy:/go/src/buggy
     ports:
       - "7890:7890"
     environment:
