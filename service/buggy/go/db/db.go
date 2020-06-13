@@ -77,9 +77,6 @@ func AuthUser(username string, pw string) bool {
 	var userReq User
 	err = db.QueryRow("SELECT name, password FROM users WHERE BINARY name = ?", username).Scan(&userReq.Username, &userReq.Password)
 
-	// Ohne "BINARY" case-insensitiv -> vuln falls man zb Account mit username==admIN erstellen kann
-	// Wollen wir das als leichte vuln?
-	// err = db.QueryRow("SELECT name, password FROM users WHERE name = ?", username).Scan(&userReq.Username, &userReq.Password)
 	if err != nil {
 		return false
 	}
@@ -228,11 +225,7 @@ func GetComments(product string) []Comment {
 	}
 	defer db.Close()
 
-<<<<<<< HEAD
 	results, err := db.Query("SELECT created_at, name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 100", product)
-=======
-	results, err := db.Query("SELECT created_at, name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 20", product)
->>>>>>> master
 
 	if err != nil {
 		return []Comment{}
