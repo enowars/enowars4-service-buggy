@@ -228,7 +228,11 @@ func GetComments(product string) []Comment {
 	}
 	defer db.Close()
 
+<<<<<<< HEAD
 	results, err := db.Query("SELECT created_at, name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 100", product)
+=======
+	results, err := db.Query("SELECT created_at, name, product, content FROM comments WHERE product = ? ORDER BY id DESC LIMIT 20", product)
+>>>>>>> master
 
 	if err != nil {
 		return []Comment{}
