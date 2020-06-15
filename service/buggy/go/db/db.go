@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql" // mysql driver
@@ -307,54 +306,4 @@ func GetTickets(username string) []Ticket {
 	}
 
 	return tickets
-}
-
-// PrintDB : Print all "users" table entries
-// TODO: Remove this at some point, only to be used now for debugging
-func PrintDB() {
-	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
-
-	if err != nil {
-		log.Println("Error connecting to database.")
-		return
-	}
-	defer db.Close()
-
-	results, err := db.Query("SELECT * FROM users")
-
-	if err != nil {
-		log.Println("Query error.")
-		return
-	}
-
-	for results.Next() {
-		var userTest User
-
-		err = results.Scan(&userTest.Username, &userTest.Password, &userTest.Status, &userTest.Admin)
-
-		if err != nil {
-			log.Printf("Error Scanning results.")
-		}
-
-		// log.Printf("%s %s %s %t\n", userTest.Username, userTest.Password, userTest.Status, userTest.Admin)
-	}
-
-	results, err = db.Query("SELECT * FROM messages")
-
-	if err != nil {
-		log.Println("Query error messages.")
-		return
-	}
-
-	for results.Next() {
-		var msg Message
-
-		err = results.Scan(&msg.To, &msg.From, &msg.Content)
-
-		if err != nil {
-			log.Printf("Error Scanning messages results.")
-		}
-
-		log.Printf("%s %s %s\n", msg.To, msg.From, msg.Content)
-	}
 }
