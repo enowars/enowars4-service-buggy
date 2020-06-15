@@ -26,10 +26,10 @@ class BuggyChecker(BaseChecker):
                 allow_redirects=False)
         self.logger.debug("register done")
 
-        if response.status_code != 302:
-            raise BrokenServiceException("registration failed")
+        assert_equals(302, response.status_code, "registration failed")
 
         cookies = response.cookies
+        # TODO: Choose comment from list
         comment = "Awesome!"
         # Post Comment
         buggy = random.choice(["super", "mega"])
@@ -37,8 +37,7 @@ class BuggyChecker(BaseChecker):
                 cookies=cookies, allow_redirects=False)
         self.logger.debug("comment written")
 
-        if response.status_code != 302:
-            raise BrokenServiceException("commenting failed")
+        assert_equals(302, response.status_code, "commenting failed")
 
         cookies = response.cookies
         subject = random_string(20)
@@ -47,8 +46,7 @@ class BuggyChecker(BaseChecker):
                 cookies=cookies, allow_redirects=False)
         self.logger.debug("ticket written")
 
-        if response.status_code != 302:
-            raise BrokenServiceException("ticket failed")
+        assert_equals(302, response.status_code, "ticket failed")
 
         try:
             hash = response.headers["location"].split("/")[-1].strip()
