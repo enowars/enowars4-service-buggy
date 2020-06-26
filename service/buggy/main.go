@@ -11,9 +11,7 @@ import (
 
 func main() {
 	router := mux.NewRouter()
-	// Serve images
 	router.PathPrefix("/img/").Handler(http.StripPrefix("/img/", http.FileServer(http.Dir("./img/"))))
-	// Servce html/css
 	router.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("./templates/"))))
 
 	router.HandleFunc("/", routes.Index)
