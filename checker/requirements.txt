@@ -1,2 +1,3 @@
-enochecker==0.1.0
+enochecker>=0.1
 gunicorn[eventlet]
+beautifulsoup4

