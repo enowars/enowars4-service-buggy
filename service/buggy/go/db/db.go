@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql" // mysql driver
+	_ "github.com/go-sql-driver/mysql"
 )
 
-// User struct
 type User struct {
 	Username string
 	Password string
@@ -16,7 +15,6 @@ type User struct {
 	Admin    bool
 }
 
-// Message struct
 type Message struct {
 	To      string
 	From    string
@@ -24,7 +22,6 @@ type Message struct {
 	Content string
 }
 
-// Comment struct
 type Comment struct {
 	Timestamp string
 	User      string
@@ -32,14 +29,12 @@ type Comment struct {
 	Content   string
 }
 
-// Ticket struct
 type Ticket struct {
 	User    string
 	Subject string
 	Hash    string
 }
 
-// InsertUser : Insert user if not present
 func InsertUser(username string, pw string, status string, admin bool) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -64,7 +59,6 @@ func InsertUser(username string, pw string, status string, admin bool) bool {
 	return true
 }
 
-// AuthUser : Authenticate user
 func AuthUser(username string, pw string) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -87,7 +81,6 @@ func AuthUser(username string, pw string) bool {
 	return true
 }
 
-// DeleteUser : Delete user if present
 func DeleteUser(username string) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -105,7 +98,6 @@ func DeleteUser(username string) bool {
 	return true
 }
 
-// GetUser : Return User from db if existing
 func GetUser(username string) User {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -123,7 +115,6 @@ func GetUser(username string) User {
 	return userReq
 }
 
-// AddMessage : Add message
 func AddMessage(username string, sender string, hash string, content string) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -141,7 +132,6 @@ func AddMessage(username string, sender string, hash string, content string) boo
 	return true
 }
 
-// GetMessages : Return Messages
 func GetMessages(username string) []Message {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -169,7 +159,6 @@ func GetMessages(username string) []Message {
 	return messages
 }
 
-// GetAllMessages : Return Messages from Hash
 func GetAllMessages(hash string) []Message {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -197,7 +186,6 @@ func GetAllMessages(hash string) []Message {
 	return messages
 }
 
-// AddComment : Add comment to product page
 func AddComment(username string, product string, content string) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -215,7 +203,6 @@ func AddComment(username string, product string, content string) bool {
 	return true
 }
 
-// GetComments : Get all Comments for one product
 func GetComments(product string) []Comment {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -243,7 +230,6 @@ func GetComments(product string) []Comment {
 	return comments
 }
 
-// AddTicket : Add ticket to database
 func AddTicket(username string, subject string, hash string) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -261,7 +247,6 @@ func AddTicket(username string, subject string, hash string) bool {
 	return true
 }
 
-// GetTicket : Return Ticket from db if existing
 func GetTicket(hash string) Ticket {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
@@ -279,7 +264,6 @@ func GetTicket(hash string) Ticket {
 	return ticket
 }
 
-// GetTickets : Return Tickets for user
 func GetTickets(username string) []Ticket {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
