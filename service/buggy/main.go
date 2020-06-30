@@ -2,7 +2,6 @@ package main
 
 import (
 	"buggy/go/routes"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -25,6 +24,5 @@ func main() {
 	router.HandleFunc("/super-buggy", routes.ProductOne)
 	router.HandleFunc("/mega-buggy", routes.ProductTwo)
 
-	fmt.Println("Running server on port 7890")
 	log.Fatal(http.ListenAndServe(":7890", router))
 }
