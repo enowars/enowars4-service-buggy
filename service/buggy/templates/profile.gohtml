@@ -10,7 +10,7 @@
 <div style="text-align:center">
     <div class="nav">
         <ul>
-            <li style="float: left"><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
+            <li style="float: left"><a class="title" href="/">Buggy Store</a></li>
             <li><a href="/profile">Profile</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
@@ -18,28 +18,38 @@
     <div class="profile">
         <h1>Profile</h1>
 
-        <label for="username">Username:</label><br>
-        <input type="text" class="noselect" name="username" value="{{.User.Username}}" disabled>
-        <p><i>Username cannot be changed at this time.</i></p><br>
+        <h3>Username: {{ .User.Username }}</h3>
+        <h3>Status: {{ .User.Status }}</h3>
+        <h3>Update Status:</h3>
+        <form method="POST" id="status">
+            <textarea name="status" form="status" placeholder="Set a new status"></textarea>
+            <button type="submit" class="btn-comment">Submit</button>
+        </form>
 
-        <label for="password">Password:</label><br>
-        <input type="password" class="noselect" name="password" value="" disabled>
-        <p><i>Password not displayed for security reasons.</i></p><br>
+        <h2>Bonus</h2>
+        <h3>You currently have {{.User.Bonus}} Buggy Bonus Points.</h3>
 
-        <label for="password">New Password:</label><br>
-        <input type="password" class="noselect" name="password" value="" disabled>
-        <p><i>Password cannot be updated at this time.</i></p>
+        <h2>Orders</h2>
+        <h3>Your orders: ({{len .Orders }})</h3>
+        <ul>
+        {{ range .Orders }}
+            <li>
+                <a href="/orders/{{.Hash}}">Order</a>
+            </li>
+        {{ end }}
+        </ul>
 
         <h2>Contact</h2>
         <h3>Do you have any questions or feedback? Write a <a href="/tickets">Ticket</a>.</h3><br/><br/>
         <h3>Your Tickets: ({{len .Tickets }})</h3>
         <ul>
-        {{range .Tickets}}
+        {{ range .Tickets }}
             <li>
                 <a href="/tickets/{{.Hash}}">{{.Subject}}</a>
             </li>
-        {{end}}
+        {{ end }}
         </ul>
+
         <h2>Inbox</h2>
         <div class="header">
             <div class="from"><h3>From</h3></div><div class="content"><h3>Message</h3></div>

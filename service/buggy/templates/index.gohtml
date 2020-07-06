@@ -9,7 +9,7 @@
 <body>
     <div class="nav">
         <ul>
-            <li style="float: left"><a style="font-weight: bold; font-size: 20px;" href="/">Buggy Store</a></li>
+            <li style="float: left"><a class="title" href="/">Buggy Store</a></li>
             {{if .Auth}}
                 <li><a href="/profile">Profile</a></li>
                 <li><a href="/logout">Logout</a></li>
@@ -19,6 +19,7 @@
             {{end}}
         </ul>
     </div>
+    <h1 class="rainbow" style="padding:5px;text-align:center;font-size:70px">Buggy Store</h1>
     <div class="products">
         <a href="super-buggy">
         <div class="card green">

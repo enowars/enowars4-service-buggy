@@ -1,9 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
 * {
     margin: 0;
     padding: 0;
 }
 
 body {
+    background-color: #ded4c3;
     font-family: monospace;
     margin-left: auto;
     margin-right: auto;
@@ -30,11 +33,12 @@ body {
 }
 
 h1 {
+    font-family: 'Lobster', cursive;
 }
 
-.content {
-    margin-left: 0;
-    margin-right: 0;
+a .title {
+    font-weight: bold;
+    font-size: 20px;
 }
 
 img {
@@ -230,9 +234,6 @@ img {
     border: 2px solid black;
 }
 
-.product .title {
-}
-
 .product h1 {
     font-size: 40px;
 }
@@ -246,14 +247,44 @@ img {
 
 .product .price {
     font-size: 25px;
-    margin-bottom: 75px;
+    margin-bottom: 10px;
 }
 
-.product .info {
+input[type="radio"] {
+    margin-top: -1px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.color-picker {
+    margin: 20px 0;
+}
+
+.color-picker label {
+    padding: 10px;
+}
+
+#cyber-cyan {
+    background-color: cyan;
+    color: white;
+}
+
+#terminal-turquoise {
+    background-color: turquoise;
+    color: white;
+}
+
+#buggy-blue {
+    background-color: blue;
+    color: white;
+}
+
+input[type="number"] {
+    margin: 5px 0;
 }
 
 .product .preorder {
-    margin: 10px 0;
+    margin: 5px 0;
     font-size: 20px;
     padding: 5px;
 }
@@ -343,3 +374,33 @@ img {
     -o-user-select: none;
     user-select: none;
 }
+
+.rainbow {
+    background: linear-gradient(to right, #6666ff, #0099ff , #00ff00, #ff3399, #6666ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rainbow_animation 4s ease-in-out infinite;
+    background-size: 400% 100%;
+}
+
+.rainbow_text_animated {
+    background: linear-gradient(to right, #6666ff, #0099ff , #00ff00, #ff3399, #6666ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: rainbow_animation 6s ease-in-out infinite;
+    background-size: 400% 100%;
+}
+
+@keyframes rainbow_animation {
+    0%,100% {
+        background-position: 0 0;
+    }
+
+    50% {
+        background-position: 100% 0;
+    }
+}
+
+/* Sorry btw, I'm not a webdev >:| */
