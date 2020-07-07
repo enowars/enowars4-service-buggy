@@ -9,10 +9,21 @@ import (
 )
 
 type User struct {
+	ID       int
 	Username string
 	Password string
 	Status   string
+	Bonus    int
 	Admin    bool
+}
+
+type Order struct {
+	ID       int
+	Username string
+	ItemID   int
+	Color    string
+	Quantity int
+	Hash     string
 }
 
 type Message struct {
@@ -35,7 +46,7 @@ type Ticket struct {
 	Hash    string
 }
 
-func InsertUser(username string, pw string, status string, admin bool) bool {
+func InsertUser(username string, pw string, status string, bonus int, admin bool) bool {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
 	if err != nil {
@@ -47,10 +58,11 @@ func InsertUser(username string, pw string, status string, admin bool) bool {
 	err = db.QueryRow("SELECT EXISTS(SELECT * FROM users WHERE name = ?)", username).Scan(&exists)
 
 	if err != nil || exists {
+
 		return false
 	}
 
-	insert, err := db.Query("INSERT IGNORE INTO users VALUES (?, ?, ?, ?)", username, pw, status, admin)
+	insert, err := db.Query("INSERT IGNORE INTO users (name, password, status, bonus, admin) VALUES (?, ?, ?, ?, ?)", username, pw, status, bonus, admin)
 	if err != nil {
 		return false
 	}
@@ -68,7 +80,7 @@ func AuthUser(username string, pw string) bool {
 	defer db.Close()
 
 	var userReq User
-	err = db.QueryRow("SELECT name, password FROM users WHERE BINARY name = ?", username).Scan(&userReq.Username, &userReq.Password)
+	err = db.QueryRow("SELECT password FROM users WHERE BINARY name = ?", username).Scan(&userReq.Password)
 
 	if err != nil {
 		return false
@@ -79,6 +91,23 @@ func AuthUser(username string, pw string) bool {
 	}
 
 	return true
+}
+
+func UpdateUser(username string, pw string, status string, bonus int, admin bool) {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	update, err := db.Query("UPDATE users SET name=?, password=?, status=?, bonus=?, admin=? WHERE name = ?", username, pw, status, bonus, admin, username)
+	if err != nil {
+		return
+	}
+	defer update.Close()
+
+	return
 }
 
 func DeleteUser(username string) bool {
@@ -107,12 +136,39 @@ func GetUser(username string) User {
 	defer db.Close()
 
 	var userReq User
-	err = db.QueryRow("SELECT name, password, status, admin FROM users WHERE name = ?", username).Scan(&userReq.Username, &userReq.Password, &userReq.Status, &userReq.Admin)
+	err = db.QueryRow("SELECT id, name, status, bonus, admin FROM users WHERE name = ?", username).Scan(&userReq.ID, &userReq.Username, &userReq.Status, &userReq.Bonus, &userReq.Admin)
 
 	if err != nil {
 		return User{}
 	}
 	return userReq
+}
+
+func GetUsers() []User {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return []User{}
+	}
+	defer db.Close()
+
+	results, err := db.Query("SELECT * FROM users")
+
+	if err != nil {
+		return []User{}
+	}
+
+	var users []User
+
+	for results.Next() {
+		var user User
+		err = results.Scan(&user.ID, &user.Username, &user.Password, &user.Status, &user.Bonus, &user.Admin)
+		if err != nil {
+			return []User{}
+		}
+		users = append(users, user)
+	}
+	return users
 }
 
 func AddMessage(username string, sender string, hash string, content string) bool {
@@ -167,7 +223,7 @@ func GetAllMessages(hash string) []Message {
 	}
 	defer db.Close()
 
-	results, err := db.Query("SELECT name, sender, hash, message FROM messages WHERE hash = ?", hash)
+	results, err := db.Query("SELECT name, sender, hash, message FROM messages WHERE hash = ? LIMIT 50", hash)
 
 	if err != nil {
 		return []Message{}
@@ -290,4 +346,66 @@ func GetTickets(username string) []Ticket {
 	}
 
 	return tickets
+}
+
+func AddOrder(username string, itemID int, color string, quantity int, hash string) bool {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return false
+	}
+	defer db.Close()
+
+	insert, err := db.Query("INSERT INTO orders (name, itemID, color, quantity, hash) VALUES (?, ?, ?, ?, ?)", username, itemID, color, quantity, hash)
+	if err != nil {
+		return false
+	}
+	defer insert.Close()
+
+	return true
+}
+
+func GetOrders(username string) []Order {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return []Order{}
+	}
+	defer db.Close()
+
+	results, err := db.Query("SELECT name, itemID, color, quantity, hash FROM orders WHERE name = ? LIMIT 10", username)
+
+	if err != nil {
+		return []Order{}
+	}
+
+	var orders []Order
+
+	for results.Next() {
+		var order Order
+		err = results.Scan(&order.Username, &order.ItemID, &order.Color, &order.Quantity, &order.Hash)
+		if err != nil {
+			return []Order{}
+		}
+		orders = append(orders, order)
+	}
+
+	return orders
+}
+
+func GetOrder(hash string) Order {
+	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+
+	if err != nil {
+		return Order{}
+	}
+	defer db.Close()
+
+	var order Order
+	err = db.QueryRow("SELECT id, name, itemID, color, quantity, hash FROM orders WHERE hash = ? ORDER BY id DESC", hash).Scan(&order.ID, &order.Username, &order.ItemID, &order.Color, &order.Quantity, &order.Hash)
+
+	if err != nil {
+		return Order{}
+	}
+	return order
 }
