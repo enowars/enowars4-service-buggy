@@ -48,7 +48,10 @@ CREATE TABLE tickets (
 );
 INSERT INTO enodb.users (name, password, status, bonus, admin)
 VALUES("admin", "root", "", 0, true);
-DELIMITER | CREATE EVENT ttl_delete ON SCHEDULE EVERY 300 SECOND DO BEGIN
-DELETE FROM comments
-WHERE created_at < NOW() - INTERVAL 1800 SECOND;
-END | DELIMITER;
+DELIMITER |
+CREATE EVENT ttl_delete
+  ON SCHEDULE EVERY 300 SECOND DO BEGIN
+    DELETE FROM enodb.comments
+    WHERE created_at < NOW() - INTERVAL 1800 SECOND;
+  END |
+DELIMITER ;
