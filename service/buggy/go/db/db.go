@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql" // mysql driver
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type User struct {

@@ -67,19 +67,15 @@ var tpl *template.Template
 func init() {
 	authKey := securecookie.GenerateRandomKey(64)
 	encryptionKey := securecookie.GenerateRandomKey(32)
-
 	store = sessions.NewCookieStore(
 		authKey,
 		encryptionKey,
 	)
-
 	store.Options = &sessions.Options{
 		MaxAge:   60 * 15,
 		HttpOnly: true,
 	}
-
 	gob.Register(account{})
-
 	tpl = template.Must(template.ParseGlob("templates/*.gohtml"))
 }
 
@@ -234,10 +230,8 @@ func Logout(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	session.Values["account"] = account{}
 	session.Options.MaxAge = -1
-
 	err = session.Save(req, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
