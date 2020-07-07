@@ -121,8 +121,8 @@ func Register(w http.ResponseWriter, req *http.Request) {
 			if username != "" && password != "" && username != "buggy-team" {
 				insert := db.InsertUser(username, password, "", 0, false)
 				if insert {
-					go sendBonus(username)
-					go sendWelcome(username)
+					sendBonus(username)
+					sendWelcome(username)
 					redirectOnSuccess(username, session, w, req)
 				} else {
 					tpl.ExecuteTemplate(w, "register.gohtml", reg{true, false})
