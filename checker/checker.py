@@ -158,6 +158,7 @@ class BuggyChecker(BaseChecker):
                 h = h.hexdigest()
                 r = self.http_get(route=f"/tickets/{h}", cookies=cookies)
                 if "Ticket" in r.text or "buggy-team" in r.text:
+                    print(r.text)  # Use flagbot to strip stdout
                     fl = re.findall(FLAG_RE, r.text)
                     for f in fl:
                         print(f)

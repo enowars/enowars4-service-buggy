@@ -1,11 +1,26 @@
 USE enodb;
 CREATE TABLE users (
+        id int NOT NULL AUTO_INCREMENT,
         name char(64),
         password char(64),
         status varchar(255),
+        bonus int NOT NULL,
         admin boolean,
-        PRIMARY KEY (name),
+        PRIMARY KEY (id),
+        INDEX (id),
         UNIQUE INDEX (name)
+);
+CREATE TABLE orders (
+        id int NOT NULL AUTO_INCREMENT,
+        name char(64),
+        itemID int,
+        color char(64),
+        quantity int,
+        hash char(64),
+        PRIMARY KEY (id),
+        INDEX (id),
+        INDEX (name),
+        INDEX (hash)
 );
 CREATE TABLE messages (
         name char(64),
@@ -31,9 +46,12 @@ CREATE TABLE tickets (
         PRIMARY KEY (hash),
         INDEX (hash)
 );
-INSERT INTO enodb.users
-VALUES("admin", "root", "some status", true);
-DELIMITER | CREATE EVENT ttl_delete ON SCHEDULE EVERY 300 SECOND DO BEGIN
-DELETE FROM comments
-WHERE created_at < NOW() - INTERVAL 1800 SECOND;
-END | DELIMITER;
+INSERT INTO enodb.users (name, password, status, bonus, admin)
+VALUES("admin", "root", "", 0, true);
+DELIMITER |
+CREATE EVENT ttl_delete
+  ON SCHEDULE EVERY 300 SECOND DO BEGIN
+    DELETE FROM enodb.comments
+    WHERE created_at < NOW() - INTERVAL 1800 SECOND;
+  END |
+DELIMITER ;
