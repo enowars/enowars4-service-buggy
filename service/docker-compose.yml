@@ -6,6 +6,8 @@ services:
       - MYSQL_DATABASE=enodb
       - MYSQL_ROOT_PASSWORD=root
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+    volumes:
+      - data:/var/lib/mysql
     restart: "always"
   buggy:
     build: .
@@ -17,3 +19,6 @@ services:
     restart: "always"
     depends_on:
       - mysql
+
+volumes:
+  data:
