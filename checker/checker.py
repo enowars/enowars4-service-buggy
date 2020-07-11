@@ -26,8 +26,6 @@ class BuggyChecker(BaseChecker):
     service_name = "Buggy"
 
     def putflag(self) -> None:
-        self.put_status()
-        return
         if (self.flag_idx % 2) == 0:
             self.put_status()
         else:
@@ -127,8 +125,6 @@ class BuggyChecker(BaseChecker):
         return username, password, response.cookies
 
     def getflag(self) -> None:
-        self.get_status()
-        return
         if (self.flag_idx % 2) == 0:
             self.get_status()
         else:
