@@ -93,7 +93,7 @@ func AuthUser(username string, pw string) bool {
 	return true
 }
 
-func UpdateUser(username string, pw string, status string, bonus int, admin bool) {
+func UpdateUser(id int, username string, pw string, status string, bonus int, admin bool) {
 	db, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
 
 	if err != nil {
@@ -101,7 +101,7 @@ func UpdateUser(username string, pw string, status string, bonus int, admin bool
 	}
 	defer db.Close()
 
-	update, err := db.Query("UPDATE users SET name=?, password=?, status=?, bonus=?, admin=? WHERE name = ?", username, pw, status, bonus, admin, username)
+	update, err := db.Query("UPDATE users SET name=?, password=?, status=?, bonus=?, admin=? WHERE id = ?", username, pw, status, bonus, admin, id)
 	if err != nil {
 		return
 	}
@@ -152,7 +152,7 @@ func GetUsers() []User {
 	}
 	defer db.Close()
 
-	results, err := db.Query("SELECT * FROM users")
+	results, err := db.Query("SELECT * FROM users ORDER BY id DESC LIMIT 50")
 
 	if err != nil {
 		return []User{}

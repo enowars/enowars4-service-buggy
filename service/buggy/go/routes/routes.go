@@ -182,7 +182,7 @@ func sendBonus(username string) {
 	select {
 	case res := <-channel:
 		if res.Error == nil {
-			db.UpdateUser(res.User.Username, res.User.Password, res.User.Status, res.User.Bonus, res.User.Admin)
+			db.UpdateUser(res.User.ID, res.User.Username, res.User.Password, res.User.Status, res.User.Bonus, res.User.Admin)
 		}
 	case <-time.After(1 * time.Second):
 		go sendError(username)
@@ -251,7 +251,7 @@ func Profile(w http.ResponseWriter, req *http.Request) {
 		if req.Method == http.MethodPost {
 			req.ParseForm()
 			if req.Form["status"] != nil {
-				db.UpdateUser(acc.User.Username, acc.User.Password, req.FormValue("status"), acc.User.Bonus, acc.User.Admin)
+				db.UpdateUser(acc.User.ID, acc.User.Username, acc.User.Password, req.FormValue("status"), acc.User.Bonus, acc.User.Admin)
 			} else {
 				http.Redirect(w, req, "/profile", http.StatusFound)
 			}
