@@ -136,7 +136,7 @@ func GetUser(username string) User {
 	defer db.Close()
 
 	var userReq User
-	err = db.QueryRow("SELECT id, name, status, bonus, admin FROM users WHERE name = ?", username).Scan(&userReq.ID, &userReq.Username, &userReq.Status, &userReq.Bonus, &userReq.Admin)
+	err = db.QueryRow("SELECT id, name, password, status, bonus, admin FROM users WHERE name = ?", username).Scan(&userReq.ID, &userReq.Username, &userReq.Password, &userReq.Status, &userReq.Bonus, &userReq.Admin)
 
 	if err != nil {
 		return User{}
