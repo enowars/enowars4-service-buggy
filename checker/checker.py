@@ -277,7 +277,7 @@ class BuggyChecker(BaseChecker):
         cookies = response.cookies
         c = ["terminal-turquoise", "cyber-cyan", "buggy-blue"]
         i = ["1", "2"]
-        q = [str(x) for x in range(10)]  # For all orders this needs to be 99
+        q = [str(x) for x in range(99)]
         users = set()
         for x in c:
             for y in i:
