@@ -14,10 +14,10 @@
             <li><a href="/logout">Logout</a></li>
         </ul>
     </div>
-    {{ if (gt (len .User) 0)}}
-        {{ range .User}}
+    {{ if (gt (len .User) 0) }}
+        {{ range .User }}
         <div class="ticket">
-            <h1>User {{ .Username }}</h1>
+            <h1>User (ID) {{ .ID }}</h1>
             <h3>Buggy Bonus Points: {{ .Bonus }}</h3>
             <h3>Status: {{ .Status }}</h3>
         </div>
