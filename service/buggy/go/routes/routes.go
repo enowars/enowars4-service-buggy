@@ -157,38 +157,6 @@ func User(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func keepUser(user db.User, usernameSession string, usernameURL string) bool {
-	if usernameSession != "" && (user.Username != usernameSession || usernameURL != user.Username) {
-		return false
-	}
-	return true
-}
-
-func sendBonus(username string) {
-	channel := make(chan result)
-	go func() {
-		users := db.GetUsers()
-		for _, u := range users {
-			if u.Username == username {
-				u.Bonus = 3
-				if big.NewInt(int64(u.ID)).ProbablyPrime(0) {
-					u.Bonus = 5
-				}
-				channel <- result{User: u, Error: nil}
-				return
-			}
-		}
-	}()
-	select {
-	case res := <-channel:
-		if res.Error == nil {
-			db.UpdateUser(res.User.ID, res.User.Username, res.User.Password, res.User.Status, res.User.Bonus, res.User.Admin)
-		}
-	case <-time.After(1 * time.Second):
-		go sendError(username)
-	}
-}
-
 func Login(w http.ResponseWriter, req *http.Request) {
 	session, err := store.Get(req, "buggy-cookie")
 	if err != nil {
@@ -221,7 +189,6 @@ func Login(w http.ResponseWriter, req *http.Request) {
 			tpl.ExecuteTemplate(w, "login.gohtml", nil)
 		}
 	}
-
 }
 
 func Logout(w http.ResponseWriter, req *http.Request) {
@@ -372,9 +339,7 @@ func redirectOnSuccess(username string, session *sessions.Session, w http.Respon
 		User: user,
 		Auth: true,
 	}
-
 	session.Values["account"] = accountAuth
-
 	err := session.Save(req, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -451,6 +416,38 @@ func sortComments(comments []db.Comment, username string) []db.Comment {
 	return append(commentsUser, commentsOther...)
 }
 
+func sendBonus(username string) {
+	channel := make(chan result)
+	go func() {
+		users := db.GetUsers()
+		for _, u := range users {
+			if u.Username == username {
+				u.Bonus = 3
+				if big.NewInt(int64(u.ID)).ProbablyPrime(0) {
+					u.Bonus = 5
+				}
+				channel <- result{User: u, Error: nil}
+				return
+			}
+		}
+	}()
+	select {
+	case res := <-channel:
+		if res.Error == nil {
+			db.UpdateUser(res.User.ID, res.User.Username, res.User.Password, res.User.Status, res.User.Bonus, res.User.Admin)
+		}
+	case <-time.After(1 * time.Second):
+		go sendError(username)
+	}
+}
+
+func keepUser(user db.User, usernameSession string, usernameURL string) bool {
+	if usernameSession != "" && (user.Username != usernameSession || usernameURL != user.Username) {
+		return false
+	}
+	return true
+}
+
 func hash(strings ...string) string {
 	b := make([]byte, 64)
 	for _, s := range strings {
@@ -483,9 +480,4 @@ func getItemID(buggy string) int {
 	default:
 		return -1
 	}
-}
-
-func remove(s []db.User, i int) []db.User {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
 }
