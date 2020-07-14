@@ -220,8 +220,8 @@ class BuggyChecker(BaseChecker):
         assert_in("buggy-team", response.text, "Profile failed")
         assert_in("enjoy your stay!", response.text, "Profile failed")
         assert_in("questions or feedback?", response.text, "Profile failed")
-        assert_in("Tickets: (0)", response.text, "Profile failed")
-        assert_in("orders: (0)", response.text, "Profile failed")
+        #assert_in("Tickets: (0)", response.text, "Profile failed")
+        #assert_in("orders: (0)", response.text, "Profile failed")
 
         # Set Status
         response = self.http_post(route=f"/profile", cookies=cookies, data={"status": random.choice(status) + self.noise})
@@ -257,8 +257,8 @@ class BuggyChecker(BaseChecker):
         assert_in("buggy-team", response.text, "Profile failed")
         assert_in("enjoy your stay!", response.text, "Profile failed")
         assert_in("questions or feedback?", response.text, "Profile failed")
-        assert_in("Tickets: (1)", response.text, "Profile failed")
-        assert_in("orders: (1)", response.text, "Profile failed")
+        #assert_in("Tickets: (1)", response.text, "Profile failed")
+        #assert_in("orders: (1)", response.text, "Profile failed")
 
         self.logger.debug(f"saving creds")
         # self.team_db[sha256ify(self.flag)] = (username, password)
@@ -289,8 +289,8 @@ class BuggyChecker(BaseChecker):
         assert_in("buggy-team", response.text, "Profile failed")
         assert_in("enjoy your stay!", response.text, "Profile failed")
         assert_in("questions or feedback?", response.text, "Profile failed")
-        assert_in("Tickets: (0)", response.text, "Profile failed")
-        assert_in("orders: (0)", response.text, "Profile failed")
+        #assert_in("Tickets: (0)", response.text, "Profile failed")
+        #assert_in("orders: (0)", response.text, "Profile failed")
 
         # get Ticket
         response = self.http_get(route=f"/profile", cookies=cookies)
@@ -298,9 +298,9 @@ class BuggyChecker(BaseChecker):
         assert_in("buggy-team", response.text, "Profile failed")
         assert_in("enjoy your stay!", response.text, "Profile failed")
         assert_in("questions or feedback?", response.text, "Profile failed")
-        assert_in("Tickets: (1)", response.text, "Profile failed")
-        assert_in("orders: (1)", response.text, "Profile failed")
-        
+        #assert_in("Tickets: (1)", response.text, "Profile failed")
+        #assert_in("orders: (1)", response.text, "Profile failed")
+
         self.logger.debug("Done getnoise - status")
 
     def havoc(self) -> None:
