@@ -257,8 +257,8 @@ class BuggyChecker(BaseChecker):
         assert_in("buggy-team", response.text, "Profile failed")
         assert_in("enjoy your stay!", response.text, "Profile failed")
         assert_in("questions or feedback?", response.text, "Profile failed")
-        #assert_in("Tickets: (1)", response.text, "Profile failed")
-        #assert_in("orders: (1)", response.text, "Profile failed")
+        assert_in("Tickets: (1)", response.text, "Profile failed")
+        assert_in("orders: (1)", response.text, "Profile failed")
 
         self.logger.debug(f"saving creds")
         # self.team_db[sha256ify(self.flag)] = (username, password)
@@ -282,24 +282,15 @@ class BuggyChecker(BaseChecker):
         assert_equals(302, response.status_code, "Login failed")
         assert_equals(response.next.url, response.url.replace("login", ""), "Login failed")
 
-        # get status
+        # check profile
         response = self.http_get(route=f"/profile", cookies=cookies)
-        assert_equals(200, response.status_code, "Profile failed")
         assert_in(self.noise, response.text, "Noise missing")
-        assert_in("buggy-team", response.text, "Profile failed")
-        assert_in("enjoy your stay!", response.text, "Profile failed")
-        assert_in("questions or feedback?", response.text, "Profile failed")
-        #assert_in("Tickets: (0)", response.text, "Profile failed")
-        #assert_in("orders: (0)", response.text, "Profile failed")
-
-        # get Ticket
-        response = self.http_get(route=f"/profile", cookies=cookies)
         assert_equals(200, response.status_code, "Profile failed")
         assert_in("buggy-team", response.text, "Profile failed")
         assert_in("enjoy your stay!", response.text, "Profile failed")
         assert_in("questions or feedback?", response.text, "Profile failed")
-        #assert_in("Tickets: (1)", response.text, "Profile failed")
-        #assert_in("orders: (1)", response.text, "Profile failed")
+        assert_in("Tickets: (1)", response.text, "Profile failed")
+        assert_in("orders: (1)", response.text, "Profile failed")
 
         self.logger.debug("Done getnoise - status")
 
