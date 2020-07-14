@@ -25,6 +25,7 @@ class BuggyChecker(BaseChecker):
     havoc_count = 1
     service_name = "Buggy"
 
+
     def putflag(self) -> None:
         if (self.flag_idx % 2) == 0:
             self.put_status()
@@ -137,6 +138,9 @@ class BuggyChecker(BaseChecker):
         except KeyError as e:
             self.logger.warning(f"flag info missing, {e}")
             return Result.MUMBLE
+        except ValueError as e:
+            self.logger.warning(f"cannot get creds, {e}")
+            return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
         if not cookies["buggy-cookie"]:
@@ -163,6 +167,9 @@ class BuggyChecker(BaseChecker):
         except KeyError as e:
             self.logger.warning(f"flag info missing, {e}")
             return Result.MUMBLE
+        except ValueError as e:
+            self.logger.warning(f"cannot get creds, {e}")
+            return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
         if not cookies["buggy-cookie"]:
@@ -184,12 +191,116 @@ class BuggyChecker(BaseChecker):
         self.logger.debug("Done getflag - ticket")
 
     def putnoise(self) -> None:
+
+        status = [
+            "Beeing Funky!",
+            "Im in ur base, killing ur d00dz",
+            "Do or do not. There is no try.",
+            "You must unlearn what you have learned.",
+            "The greatest teacher, failure is.",
+            "Pass on what you have learned.",
+            "I’m too lazy to stop being lazy.",
+            "Operator! Give me the number for 911!",
+            "Kids, just because I don’t care doesn’t mean I’m not listening.",
+            "Even communism works… in theory"
+
+        ]
+        messages = [
+            "KHAAAAN!",
+            "Do what I do. Hold tight and pretend it’s a plan!",
+            "Never run when you’re scared.",
+            "Superior intelligence and senseless cruelty just do not go together.",
+            "Come on, Rory! It isn’t rocket science, it’s just quantum physics!",
+            "Always take a banana to a party, Rose: bananas are good!",
+            "Never be certain of anything. It’s a sign of weakness.",
+            "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.",
+            "A gun is not a weapon, it’s a tool, like a hammer or a screwdriver or an alligator."
+        ]
+
         self.logger.info("Starting putnoise")
-        pass
+        username, password, cookies = self.register()
+
+        # View Profile
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (0)", response.text, "Profile failed")
+        assert_in("orders: (0)", response.text, "Profile failed")
+
+        # Set Status
+        response = self.http_post(route=f"/profile", cookies=cookies, data={"status": random.choice(status) + self.noise})
+        assert_equals(302, response.status_code, "Status failed")
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Status failed")
+        assert_in(self.noise, response.text, "Status failed")
+
+        # Place Order
+        buggy = random.choice(["super", "mega"])
+        color = random.choice(["terminal-turquoise", "cyber-cyan", "buggy-blue"])
+        quantity = random.randint(1, 99)
+        response = self.http_post(route=f"/{buggy}-buggy", cookies=cookies, data={"color":color, "quantity":quantity})
+        assert_equals(302, response.status_code, "Order failed")
+        assert_equals(response.next.url, response.url, "Order failed")
+        self.logger.debug("order placed")
+
+        # Write Ticket
+        subject = random_string(20)
+        response = self.http_post(route="/tickets", cookies=cookies, data={"subject":subject, "message":random.choice(messages) + self.noise})
+        self.logger.debug("ticket written")
+        assert_equals(302, response.status_code, "Ticket failed")
+        assert_equals(64, len(response.next.url.split("/")[-1]), "Ticket failed")
+        try:
+            hash = response.headers["location"].split("/")[-1].strip()
+        except Exception:
+            raise BrokenServiceException("Ticket failed")
+        assert_equals(64, len(hash), "Ticket failed")
+
+        # View order and ticket
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (1)", response.text, "Profile failed")
+        assert_in("orders: (1)", response.text, "Profile failed")
+
+        self.logger.debug(f"saving creds")
+        self.team_db[sha256ify(self.noise)] = (username, password)
+
+        self.logger.debug("Done putnoise - status")
 
     def getnoise(self) -> None:
         self.logger.info("Starting getnoise")
-        pass
+
+        try:
+            (username, password) = self.team_db[sha256ify(self.noise)]
+        except KeyError as e:
+            self.logger.warning(f"noise info missing, {e}")
+            return Result.MUMBLE
+        except ValueError as e:
+            self.logger.warning(f"cannot get creds, {e}")
+            return Result.MUMBLE
+        response = self.http_post(route="/login", data={"username": username, "pw": password})
+        cookies = response.cookies
+        if not cookies["buggy-cookie"]:
+            self.logger.debug(f"Failed login for user {username}")
+            raise BrokenServiceException("Cookies missing")
+        assert_equals(302, response.status_code, "Login failed")
+        assert_equals(response.next.url, response.url.replace("login", ""), "Login failed")
+
+        # check profile
+        response = self.http_get(route=f"/profile", cookies=cookies)
+        assert_in(self.noise, response.text, "Noise missing")
+        assert_equals(200, response.status_code, "Profile failed")
+        assert_in("buggy-team", response.text, "Profile failed")
+        assert_in("enjoy your stay!", response.text, "Profile failed")
+        assert_in("questions or feedback?", response.text, "Profile failed")
+        assert_in("Tickets: (1)", response.text, "Profile failed")
+        assert_in("orders: (1)", response.text, "Profile failed")
+
+        self.logger.debug("Done getnoise")
 
     def havoc(self) -> None:
         self.logger.info("Starting havoc")
