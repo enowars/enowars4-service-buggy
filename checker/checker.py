@@ -138,6 +138,9 @@ class BuggyChecker(BaseChecker):
         except KeyError as e:
             self.logger.warning(f"flag info missing, {e}")
             return Result.MUMBLE
+        except ValueError as e:
+            self.logger.warning(f"cannot get creds, {e}")
+            return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
         if not cookies["buggy-cookie"]:
@@ -163,6 +166,9 @@ class BuggyChecker(BaseChecker):
             (hash, username, password) = self.team_db[sha256ify(self.flag)]
         except KeyError as e:
             self.logger.warning(f"flag info missing, {e}")
+            return Result.MUMBLE
+        except ValueError as e:
+            self.logger.warning(f"cannot get creds, {e}")
             return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
@@ -273,6 +279,9 @@ class BuggyChecker(BaseChecker):
         except KeyError as e:
             self.logger.warning(f"noise info missing, {e}")
             return Result.MUMBLE
+        except ValueError as e:
+            self.logger.warning(f"cannot get creds, {e}")
+            return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
         if not cookies["buggy-cookie"]:
@@ -291,7 +300,7 @@ class BuggyChecker(BaseChecker):
         assert_in("Tickets: (1)", response.text, "Profile failed")
         assert_in("orders: (1)", response.text, "Profile failed")
 
-        self.logger.debug("Done getnoise - status")
+        self.logger.debug("Done getnoise")
 
     def havoc(self) -> None:
         self.logger.info("Starting havoc")
