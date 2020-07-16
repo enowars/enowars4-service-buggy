@@ -22,7 +22,7 @@ class BuggyChecker(BaseChecker):
     port = 7890
     flag_count = 2
     noise_count = 1
-    havoc_count = 1
+    havoc_count = 0
     service_name = "Buggy"
 
 

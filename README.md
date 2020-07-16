@@ -4,39 +4,34 @@
 
 buggy is a webservice written in [go](https://golang.org/).
 
-**Note that the service and checker are still work in progress, more functionality and vulnerabilities could be added in the future.**
-
 ## Service
 ### Functionality
 The Buggy Store offers two buggys. On each product page you can have a look at the description, comment something and preorder the buggy.
-You can also send a support ticket from the user profile to the Buggy-Store admin team.
+You can also send a support ticket from the user profile to the Buggy-Store admin-team.
 
 ### Technology
 The Front- and Backend are written in go, making use of the gohtml templating functionality. The users, comments, messages etc. are stored in a mysql database.
-#### Vulnerability
-Each ticket gets a (sha256-)hash assigned to it.
-```Go
-str := acc.User.Username + strconv.FormatInt(time.Now().Unix(), 10)
-sha := sha256.Sum256([]byte(str))
-hash := hex.EncodeToString(sha[:])
+#### Vulnerabilities
+##### Tickets
+Each ticket gets a hash assigned to it.
+
+Because only the username as well as the current time (in seconds) is used, this hash can be forged if the username is known.
+Exploiting involves getting the usernames via the orders and brute forcing the timestamp. The orders themselves have a hash assigned to them which again can be forged.
+
+The vulnerability can be fixed quite easily be simply changing the hash digest contents (i.e. you could hardcode a string in place of the username). Replaying is possible only when analyzing all requests to `/orders/` as there are only 48 uniquely different hashes possible.
+
+##### Status
+The `/user/` endpoint displays user information.
+
+Because `db.InsertUser` returns true even when the insert was faulty, you can get an authenticated session with an empty `User` struct.
+Browsing `/user/` (with any username) will then cause all Users to be printed due to a faulty if-comparison in `keepUser`:
+```go
+if usernameSession != "" && (user.Username != usernameSession || usernameURL != user.Username) {
 ```
-Because the username as well as the current time (in seconds) is used, this hash can be forged if the username is known.
-Exploiting would involve getting the usernames via the comment sections and brute forcing the timestamp. Because the comments include a timestamp, the amount of enumeration that has to be done is very small though.
 
-The vulnerability can be fixed quite easily be simply changing the sha256 digest contents (i.e. you could hardcode a string in place of the username). Replaying is not possible as the usernames as well as the timestamps are always different which leads to different hashes which need to be accessed.
+In the `status` part of the user information flags are leaked.
 
-## Checker
-### putflag
-The Checker registers an account, comments something on one of the buggys and sends a support ticket.
+Fixing this vuln can be done at multiple places, for instance you can just remove the `usernameSession != ""` part of if-comparison.
 
-### getflag
-The Checker logs in and checks if the ticket (and comment) is still there.
-
-### putnoise
-See putflag, just with a fake flag.
-
-### getnoise
-See getflag, just with a fake flag.
-
-### havoc
-The Checker registers an account, comments and preorders both buggys, checks for the welcome and preorder messages, and sends a support ticket.
+##### PoC
+PoC exploits can be found in the `checker.py`.
