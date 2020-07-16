@@ -101,7 +101,7 @@ class BuggyChecker(BaseChecker):
         response = self.http_post(route="/register", data={"username":username, "pw":password},
                 allow_redirects=False)
         cookies = response.cookies
-        if not cookies["buggy-cookie"]:
+        if "buggy-cookie" not in cookies.keys():
             self.logger.debug(f"Failed register for user {username}")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Registration failed")
@@ -117,7 +117,7 @@ class BuggyChecker(BaseChecker):
 
         # Login
         response = self.http_post(route="/login", data={"username": username, "pw": password})
-        if not response.cookies["buggy-cookie"]:
+        if "buggy-cookie" not in response.cookies.keys():
             self.logger.debug(f"Failed login for user {username}")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Login failed")
@@ -143,7 +143,7 @@ class BuggyChecker(BaseChecker):
             return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
-        if not cookies["buggy-cookie"]:
+        if "buggy-cookie" not in cookies.keys():
             self.logger.debug(f"Failed login for user {username}")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Login failed")
@@ -172,7 +172,7 @@ class BuggyChecker(BaseChecker):
             return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
-        if not cookies["buggy-cookie"]:
+        if "buggy-cookie" not in cookies.keys():
             self.logger.debug(f"Failed login for user {username}")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Login failed")
@@ -284,7 +284,7 @@ class BuggyChecker(BaseChecker):
             return Result.MUMBLE
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
-        if not cookies["buggy-cookie"]:
+        if "buggy-cookie" not in cookies.keys():
             self.logger.debug(f"Failed login for user {username}")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Login failed")
