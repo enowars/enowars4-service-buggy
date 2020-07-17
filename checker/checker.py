@@ -290,7 +290,7 @@ class BuggyChecker(BaseChecker):
         assert_in("Tickets: (1)", response.text, "Profile failed")
         assert_in("orders: (1)", response.text, "Profile failed")
 
-        self.logger.debug(f"saving creds")
+        self.logger.debug(f"saving creds {username} {password} {hash}")
         self.team_db[sha256ify(self.noise)] = (username, password)
 
         self.logger.debug("Done putnoise - status")
@@ -348,7 +348,7 @@ class BuggyChecker(BaseChecker):
             assert_equals(200, response.status_code, "Order view failed.")
             assert_in("Profile", response.text, "Order view failed.")
             assert_in("Expected Delivery", response.text, "Order view failed.")
-            assert_in(username, response.text, "Order view failed.")
+            # assert_in(username, response.text, "Order view failed.")  # Too many collissions
 
         # Check /user
         user_regex = re.compile(r"Username:\s([0-9a-zA-Z._-]{1,64})<\/h3>")
