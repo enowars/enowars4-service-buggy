@@ -1,17 +1,22 @@
 import html
 import random
-import requests
-import string
-
-from enochecker import *
-from enochecker.utils import sha256ify
 
 # exploit
+# import re
+# from datetime import datetime, timedelta
+# from time import sleep, time
 import re
-from bs4 import BeautifulSoup as BS
-from datetime import datetime, timedelta
+import string
+from datetime import time
 from hashlib import sha256
-from time import sleep, time
+from time import time
+
+import requests
+from appdirs import user_cache_dir
+from enochecker import BaseChecker, BrokenServiceException, Result, assert_equals, assert_in, run
+from enochecker.utils import sha256ify
+
+from utils.usernames import random_username
 
 
 def random_string(amount):
@@ -24,7 +29,6 @@ class BuggyChecker(BaseChecker):
     noise_count = 1
     havoc_count = 0
     service_name = "Buggy"
-
 
     def putflag(self) -> None:
         if (self.flag_idx % 2) == 0:
@@ -63,13 +67,14 @@ class BuggyChecker(BaseChecker):
         buggy = random.choice(["super", "mega"])
         color = random.choice(["terminal-turquoise", "cyber-cyan", "buggy-blue"])
         quantity = random.randint(1, 99)
-        response = self.http_post(route=f"/{buggy}-buggy", cookies=cookies, data={"color":color, "quantity":quantity})
+        response = self.http_post(route=f"/{buggy}-buggy", cookies=cookies, data={"color": color, "quantity": quantity},)
         assert_equals(302, response.status_code, "Order failed")
         assert_equals(response.next.url, response.url, "Order failed")
         self.logger.debug("order placed")
+
         # Write ticket
         subject = random_string(20)
-        response = self.http_post(route="/tickets", cookies=cookies, data={"subject":subject, "message":self.flag})
+        response = self.http_post(route="/tickets", cookies=cookies, data={"subject": subject, "message": self.flag},)
         self.logger.debug("ticket written")
         assert_equals(302, response.status_code, "Ticket failed")
         assert_equals(64, len(response.next.url.split("/")[-1]), "Ticket failed")
@@ -94,18 +99,19 @@ class BuggyChecker(BaseChecker):
         self.logger.debug("Done putflag - ticket")
 
     def register(self) -> (str, str, requests.cookies.RequestsCookieJar):
-        username = random_string(20)
+        username = random_username()
         password = random_string(20)
 
         # Register
-        response = self.http_post(route="/register", data={"username":username, "pw":password},
-                allow_redirects=False)
+        response = self.http_post(route="/register", data={"username": username, "pw": password}, allow_redirects=False,)
         cookies = response.cookies
         if "buggy-cookie" not in cookies.keys():
             self.logger.debug(f"Failed register for user {username}")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Registration failed")
-        assert_equals(response.next.url, response.url.replace("register", ""), "Registration failed")
+        assert_equals(
+            response.next.url, response.url.replace("register", ""), "Registration failed",
+        )
 
         # Logout
         response = self.http_get(route="/logout", cookies=cookies)
@@ -202,9 +208,9 @@ class BuggyChecker(BaseChecker):
             "I’m too lazy to stop being lazy.",
             "Operator! Give me the number for 911!",
             "Kids, just because I don’t care doesn’t mean I’m not listening.",
-            "Even communism works… in theory"
-
+            "Even communism works… in theory",
         ]
+
         messages = [
             "KHAAAAN!",
             "Do what I do. Hold tight and pretend it’s a plan!",
@@ -214,11 +220,29 @@ class BuggyChecker(BaseChecker):
             "Always take a banana to a party, Rose: bananas are good!",
             "Never be certain of anything. It’s a sign of weakness.",
             "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.",
-            "A gun is not a weapon, it’s a tool, like a hammer or a screwdriver or an alligator."
+            "A gun is not a weapon, it’s a tool, like a hammer or a screwdriver or an alligator.",
+        ]
+
+        comments = [
+            "Awesome!",
+            "Amazing!",
+            "I can't believe how awesome this buggy is!",
+            "This is so buggy!",
         ]
 
         self.logger.info("Starting putnoise")
         username, password, cookies = self.register()
+
+        # Post Comment
+        comment = random.choice(comments)
+        buggy = random.choice(["super", "mega"])
+        response = self.http_post(route=f"/{buggy}-buggy", data={"comment": comment}, cookies=cookies, allow_redirects=False,)
+        self.logger.debug("comment written")
+
+        response = self.http_get(route=f"/{buggy}-buggy", data={"comment": comment}, cookies=cookies)
+        assert_equals(200, response.status_code, "Commenting failed")
+        assert_in(comment, response.text, "Commenting failed")
+        assert_in(username, response.text, "Commenting failed")
 
         # View Profile
         response = self.http_get(route=f"/profile", cookies=cookies)
@@ -230,7 +254,7 @@ class BuggyChecker(BaseChecker):
         assert_in("orders: (0)", response.text, "Profile failed")
 
         # Set Status
-        response = self.http_post(route=f"/profile", cookies=cookies, data={"status": random.choice(status) + self.noise})
+        response = self.http_post(route=f"/profile", cookies=cookies, data={"status": random.choice(status) + self.noise},)
         assert_equals(302, response.status_code, "Status failed")
         response = self.http_get(route=f"/profile", cookies=cookies)
         assert_equals(200, response.status_code, "Status failed")
@@ -240,14 +264,16 @@ class BuggyChecker(BaseChecker):
         buggy = random.choice(["super", "mega"])
         color = random.choice(["terminal-turquoise", "cyber-cyan", "buggy-blue"])
         quantity = random.randint(1, 99)
-        response = self.http_post(route=f"/{buggy}-buggy", cookies=cookies, data={"color":color, "quantity":quantity})
+        response = self.http_post(route=f"/{buggy}-buggy", cookies=cookies, data={"color": color, "quantity": quantity},)
         assert_equals(302, response.status_code, "Order failed")
         assert_equals(response.next.url, response.url, "Order failed")
         self.logger.debug("order placed")
 
         # Write Ticket
         subject = random_string(20)
-        response = self.http_post(route="/tickets", cookies=cookies, data={"subject":subject, "message":random.choice(messages) + self.noise})
+        response = self.http_post(
+            route="/tickets", cookies=cookies, data={"subject": subject, "message": random.choice(messages) + self.noise},
+        )
         self.logger.debug("ticket written")
         assert_equals(302, response.status_code, "Ticket failed")
         assert_equals(64, len(response.next.url.split("/")[-1]), "Ticket failed")
@@ -285,13 +311,14 @@ class BuggyChecker(BaseChecker):
         response = self.http_post(route="/login", data={"username": username, "pw": password})
         cookies = response.cookies
         if "buggy-cookie" not in cookies.keys():
-            self.logger.debug(f"Failed login for user {username}")
+            self.logger.debug(f"Failed login for user {username} (missing cookies).")
             raise BrokenServiceException("Cookies missing")
         assert_equals(302, response.status_code, "Login failed")
         assert_equals(response.next.url, response.url.replace("login", ""), "Login failed")
 
         # check profile
         response = self.http_get(route=f"/profile", cookies=cookies)
+        profile = response.text
         assert_in(self.noise, response.text, "Noise missing")
         assert_equals(200, response.status_code, "Profile failed")
         assert_in("buggy-team", response.text, "Profile failed")
@@ -300,51 +327,55 @@ class BuggyChecker(BaseChecker):
         assert_in("Tickets: (1)", response.text, "Profile failed")
         assert_in("orders: (1)", response.text, "Profile failed")
 
+        # Check /tickets
+        tickets_regex = re.compile(r"tickets\/(\w{64})")
+        tickets = tickets_regex.findall(profile)
+        if not tickets:
+            raise BrokenServiceException("Ticket(s) missing.")
+        for ticket in tickets:
+            response = self.http_get(route=f"/tickets/{ticket}", cookies=cookies)
+            assert_in(self.noise, response.text, "Ticket view failed.")
+            assert_equals(200, response.status_code, "Ticket view failed.")
+            assert_in("buggy-team", response.text, "Ticket view failed.")
+            assert_in(username, response.text, "Ticket view failed.")
+            assert_in("Profile", response.text, "Ticket view failed.")
+
+        # Check /orders
+        orders_regex = re.compile(r"orders\/(\w{64})")
+        orders = orders_regex.findall(profile)
+        if not orders:
+            raise BrokenServiceException("Order(s) missing.")
+        for order in orders:
+            response = self.http_get(route=f"/orders/{order}", cookies=cookies)
+            assert_equals(200, response.status_code, "Order view failed.")
+            assert_in("Profile", response.text, "Order view failed.")
+            assert_in("Expected Delivery", response.text, "Order view failed.")
+            assert_in(username, response.text, "Order view failed.")
+
+        # Check /user
+        user_regex = re.compile(r"Username:\s([0-9a-zA-Z._-]{1,64})<\/h3>")
+        try:
+            username_from_profile = user_regex.findall(profile)[0]
+        except Exception as e:
+            self.error("Failed to get username at /user")
+            raise BrokenServiceException("User view failed.")
+        if not username_from_profile:
+            raise BrokenServiceException("User view failed.")
+        response = self.http_get(route=f"/user/{username_from_profile}", cookies=cookies)
+        assert_equals(200, response.status_code, "User view failed.")
+        assert_in("Profile", response.text, "User view failed.")
+        assert_in(self.noise, response.text, "User view failed.")
+        assert_in("Buggy Bonus Points:", response.text, "User view failed.")
+
         self.logger.debug("Done getnoise")
 
     def havoc(self) -> None:
         self.logger.info("Starting havoc")
         # TODO
         return
-        # Register account
-        response = self.http_post(route="/register", data={"username":username, "pw":password},
-                allow_redirects=False)
-        self.logger.debug("register done")
-
-        assert_equals(302, response.status_code, "registration failed")
-
-        cookies = response.cookies
-        # TODO: Choose comment from list
-        comment = "Awesome!"
-        # Post Comment
-        buggy = random.choice(["super", "mega"])
-        response = self.http_post(route=f"/{buggy}-buggy", data={"comment":comment},
-                cookies=cookies, allow_redirects=False)
-        self.logger.debug("comment written")
-
-        assert_equals(302, response.status_code, "commenting failed")
-
-        cookies = response.cookies
-        # Write ticket
-        subject = random_string(20)
-        response = self.http_post(route="/tickets", data={"subject":subject, "message":self.flag},
-                cookies=cookies, allow_redirects=False)
-        self.logger.debug("ticket written")
-
-        assert_equals(302, response.status_code, "ticket failed")
-
-        try:
-            hash = response.headers["location"].split("/")[-1].strip()
-        except Exception:
-            raise BrokenServiceException("ticket redirect failed")
-
-        assert_equals(64, len(hash), "ticket redirect failed")
-
-        self.logger.debug(f"saving hash : {hash}")
-        self.team_db[sha256ify(self.flag)] = (hash, username, password)
 
     def exploit(self) -> None:
-        if random.choice([0,1]) == 0:
+        if random.choice([0, 1]) == 0:
             self.exploit_status()
         else:
             self.exploit_ticket()
@@ -364,7 +395,7 @@ class BuggyChecker(BaseChecker):
         """
         password = random_string(20)
         username = random_string(65)
-        response = self.http_post(route="/register", data={"username":username, "pw":password})
+        response = self.http_post(route="/register", data={"username": username, "pw": password})
         r = self.http_get(route=f"/user/itdoesntevenmatter", cookies=response.cookies)
         print(r.text)  # Flags in here
 
@@ -384,7 +415,7 @@ class BuggyChecker(BaseChecker):
         """
         password = random_string(20)
         username = random_string(65)
-        response = self.http_post(route="/register", data={"username":username, "pw":password})
+        response = self.http_post(route="/register", data={"username": username, "pw": password})
         cookies = response.cookies
         c = ["terminal-turquoise", "cyber-cyan", "buggy-blue"]
         i = ["1", "2"]
@@ -394,8 +425,7 @@ class BuggyChecker(BaseChecker):
             for y in i:
                 for z in q:
                     h = hash_func(x, y, z)
-                    r = self.http_get(route=f"/orders/{h}", cookies=cookies,
-                        allow_redirects=False)
+                    r = self.http_get(route=f"/orders/{h}", cookies=cookies, allow_redirects=False)
                     if r.status_code == 200:
                         user = ""
                         for line in r.text.split("\n"):
@@ -404,7 +434,7 @@ class BuggyChecker(BaseChecker):
                                 users.add(user)
         t = str(int(time()))[:-1]
         for user in users:
-            for i in range(int(t)-100, int(t)):
+            for i in range(int(t) - 100, int(t)):
                 h = hash_func(user, str(i))
                 r = self.http_get(route=f"/tickets/{h}", cookies=cookies)
                 if "Ticket" in r.text or "buggy-team" in r.text:
@@ -415,7 +445,7 @@ def hash_func(*args):
     b = bytearray([0 for x in range(64)])
     for s in args:
         for i in range(64):
-            b[i] = (ord(s[((i+1)%len(s))]) ^ ord(s[(i%len(s))])) ^ b[i]
+            b[i] = (ord(s[((i + 1) % len(s))]) ^ ord(s[(i % len(s))])) ^ b[i]
     h = sha256()
     h.update(b)
     h = h.hexdigest()
