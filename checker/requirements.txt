@@ -1,3 +1,4 @@
 enochecker>=0.2
 gunicorn[eventlet]
+dnspython<2
 beautifulsoup4
