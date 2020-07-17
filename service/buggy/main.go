@@ -1,6 +1,7 @@
 package main
 
 import (
+	"buggy/go/db"
 	"buggy/go/routes"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 )
 
 func main() {
+	db.InitDB()
 	router := mux.NewRouter()
 	router.PathPrefix("/img/").Handler(http.StripPrefix("/img/", http.FileServer(http.Dir("./img/"))))
 	router.PathPrefix("/templates/").Handler(http.StripPrefix("/templates/", http.FileServer(http.Dir("./templates/"))))
