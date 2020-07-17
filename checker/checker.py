@@ -1,4 +1,3 @@
-import html
 import random
 
 # exploit
@@ -12,7 +11,6 @@ from hashlib import sha256
 from time import time
 
 import requests
-from appdirs import user_cache_dir
 from enochecker import BaseChecker, BrokenServiceException, Result, assert_equals, assert_in, run
 from enochecker.utils import sha256ify
 
