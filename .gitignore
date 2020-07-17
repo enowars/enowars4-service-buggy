@@ -29,4 +29,5 @@ venv
 # checker
 .data
 buggy_db_data
+*.vscode
 __pycache__
