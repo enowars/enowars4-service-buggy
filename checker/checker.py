@@ -224,8 +224,6 @@ class BuggyChecker(BaseChecker):
         comments = [
             "Awesome!",
             "Amazing!",
-            "I can't believe how awesome this buggy is!",
-            "This is so buggy!",
         ]
 
         self.logger.info("Starting putnoise")
