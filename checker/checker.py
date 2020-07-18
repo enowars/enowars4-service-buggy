@@ -348,7 +348,7 @@ class BuggyChecker(BaseChecker):
             assert_equals(200, response.status_code, "Order view failed.")
             assert_in("Profile", response.text, "Order view failed.")
             assert_in("Expected Delivery", response.text, "Order view failed.")
-            # assert_in(username, response.text, "Order view failed.")  # Too many collissions
+            # assert_in(username, response.text, "Order view failed.")  # Too many collisions
 
         # Check /user
         user_regex = re.compile(r"Username:\s([0-9a-zA-Z._-]{1,64})<\/h3>")

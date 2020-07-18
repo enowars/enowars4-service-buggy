@@ -37,14 +37,16 @@ CREATE TABLE comments (
         product char(64),
         content varchar(512),
         PRIMARY KEY (id),
-        INDEX (id)
+        INDEX (id),
+        INDEX (product)
 );
 CREATE TABLE tickets (
         name char(64),
         subject char(64),
         hash char(64),
         PRIMARY KEY (hash),
-        INDEX (hash)
+        INDEX (hash),
+        INDEX (name)
 );
 INSERT INTO enodb.users (name, password, status, bonus, admin)
 VALUES("admin", "root", "", 0, true);
