@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -52,6 +53,9 @@ var db *sql.DB
 func InitDB() {
 	var err error
 	db, err = sql.Open("mysql", fmt.Sprintf("root:%s@tcp(mysql:3306)/%s", os.Getenv("MYSQL_ROOT_PASSWORD"), os.Getenv("MYSQL_DATABASE")))
+	db.SetMaxOpenConns(500)
+	db.SetMaxIdleConns(400)
+	db.SetConnMaxLifetime(time.Minute * 30)
 
 	if err != nil {
 		log.Panic(err)
