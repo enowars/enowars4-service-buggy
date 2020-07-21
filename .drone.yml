@@ -1,0 +1,70 @@
+kind: pipeline
+type: docker
+name: build
+
+steps:
+- name: publish-docker
+  image: plugins/docker
+  network_mode: registry-network
+  settings:
+    context: service
+    dockerfile: service/Dockerfile
+    repo: registry:5000/buggy-service
+    registry: registry:5000
+    insecure: true
+- name: publish-docker-mysql
+  image: plugins/docker
+  network_mode: registry-network
+  settings:
+    context: service/mysql
+    dockerfile: service/mysql/Dockerfile
+    repo: registry:5000/buggy-service-mysql
+    registry: registry:5000
+    insecure: true
+- name: publish-service-sources
+  image: alpine
+  environment:
+    SSH_KEY:
+      from_secret: github_bot_ssh_key
+    ACCESS_TOKEN:
+      from_secret: github_bot_access_token
+  commands:
+    - apk update && apk add curl bash
+    - curl -s https://$${ACCESS_TOKEN}@raw.githubusercontent.com/enowars/Enowars4DevOps/master/drone-opennebula/push-services.sh | bash -s buggy
+- name: trigger-vm-image-creation
+  image: plugins/downstream
+  settings:
+    server: https://droneci.sect.tu-berlin.de
+    token:
+      from_secret: trigger_token
+    fork: true
+    repositories:
+      - enowars/Enowars4DevOps@master
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+
+---
+kind: pipeline
+type: docker
+name: test
+
+services:
+- name: buggy
+  detach: true
+  image: localhost:5000/buggy-service
+  environment:
+    MYSQL_DATABASE: enodb
+    MYSQL_ROOT_PASSWORD: root
+- name: buggy-mysql
+  detach: true
+  image: localhost:5000/buggy-service-mysql
+  environment:
+    MYSQL_DATABASE: enodb
+    MYSQL_ROOT_PASSWORD: root
+
+depends_on:
+- build
