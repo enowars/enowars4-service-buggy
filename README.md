@@ -1,6 +1,6 @@
 # enowars4-service-buggy
 [![Build Status](https://droneci.sect.tu-berlin.de/api/badges/enowars/enowars4-service-buggy/status.svg)](https://droneci.sect.tu-berlin.de/enowars/enowars4-service-buggy)
-
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
 buggy is a webservice written in [go](https://golang.org/).
 
